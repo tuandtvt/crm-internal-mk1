@@ -112,6 +112,12 @@ export interface Customer extends BaseEntity {
   logo_url?: string;
   owner_id?: number;
   status_id?: number;
+  // B2B Tracking Fields (IS Team Requirements)
+  website?: string; // Company website URL (e.g., "fitx.co.jp")
+  industry?: string; // Industry category (EdTech, HealthTech, FinTech, etc.)
+  linkedin_url?: string; // LinkedIn or social profile URL
+  lead_note?: string; // Lead status/intelligence (e.g., "Just raised Series B", "Released new app")
+  competitors?: string; // Similar projects/competitors (e.g., "Giống Fluentgo")
   // Relationships
   owner?: User;
   status?: Status;

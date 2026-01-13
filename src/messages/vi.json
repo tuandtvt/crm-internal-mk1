@@ -27,7 +27,8 @@
     "all": "Tất cả",
     "overview": "Tổng quan",
     "details": "Chi tiết",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "selected": "Đã chọn"
   },
   "auth": {
     "login": {
@@ -190,7 +191,25 @@
     "creating": "Đang tạo...",
     "updateCustomer": "Cập nhật khách hàng",
     "createCustomer": "Thêm khách hàng mới",
+    "companyProfile": "Hồ sơ công ty",
+    "website": "Website",
+    "industry": "Ngành",
+    "linkedIn": "LinkedIn/Mạng xã hội",
+    "leadNote": "Ghi chú/Tình trạng Lead",
+    "competitors": "Dự án tương đồng",
+    "intelligence": "Thông tin Lead",
     "addNew": "Thêm mới"
+  },
+  "pipeline": {
+    "title": "Kênh bán hàng",
+    "subtitle": "Quản lý và theo dõi kênh bán hàng của bạn",
+    "description": "Quản lý và theo dõi kênh bán hàng của bạn",
+    "pipelineValue": "Giá trị kênh",
+    "wonValue": "Giá trị thắng",
+    "avgDealSize": "Giá trị TB",
+    "winRate": "Tỷ lệ thắng",
+    "newDeal": "Giao dịch mới",
+    "searchPlaceholder": "Tìm kiếm giao dịch..."
   },
   "deals": {
     "title": "Quản lý Cơ hội",
@@ -346,6 +365,7 @@
   "marketing": {
     "title": "Tổng quan Marketing",
     "description": "Theo dõi các chiến dịch email và chỉ số tương tác của bạn",
+    "managerDescription": "Quản lý và theo dõi tất cả các chiến dịch marketing",
     "campaigns": "Chiến dịch",
     "templates": "Mẫu",
     "overview": "Tổng quan",
@@ -359,12 +379,16 @@
     "recentCampaigns": "Chiến dịch gần đây",
     "viewAll": "Xem tất cả",
     "sent": "đã gửi",
-    "open": "mở",
-    "click": "nhấp",
+    "open": "Mở",
+    "click": "Nhấp",
+    "conversion": "Chuyển đổi",
     "performanceTrend": "Xu hướng hiệu suất chiến dịch",
     "last7Days": "Hoạt động email 7 ngày qua",
     "legendSent": "Đã gửi",
-    "legendOpened": "Đã mở"
+    "legendOpened": "Đã mở",
+    "filterByStatus": "Lọc theo trạng thái",
+    "sendingProgress": "Tiến độ gửi",
+    "scheduledFor": "Lên lịch vào"
   },
   "support": {
     "title": "Hỗ trợ khách hàng",
@@ -403,6 +427,41 @@
     "customersImported": "khách hàng đã được nhập thành công!",
     "preparingExport": "Đang chuẩn bị xuất CSV...",
     "downloadStarted": "Tải xuống đã bắt đầu! Kiểm tra thư mục tải xuống của bạn."
+  },
+  "templates": {
+    "title": "Mẫu Email",
+    "description": "Duyệt và quản lý các mẫu email chuyên nghiệp",
+    "createTemplate": "Tạo mẫu",
+    "createDescription": "Thiết kế mẫu email mới cho chiến dịch của bạn",
+    "filterByCategory": "Lọc theo danh mục",
+    "viewDetail": "Xem",
+    "preview": "Xem trước mẫu",
+    "used": "đã dùng",
+    "timesUsed": "Số lần sử dụng",
+    "created": "Ngày tạo",
+    "lastModified": "Cập nhật lần cuối",
+    "useTemplate": "Sử dụng mẫu",
+    "duplicate": "Sao chép",
+    "copy": "Bản sao",
+    "templateName": "Tên mẫu",
+    "templateNamePlaceholder": "vd: Khuyến mãi mùa hè",
+    "category": "Danh mục",
+    "templateDescription": "Mô tả",
+    "templateDescriptionPlaceholder": "Mô tả mẫu này dùng để làm gì...",
+    "htmlContent": "Nội dung HTML",
+    "htmlContentPlaceholder": "<html>\n  <body>\n    <!-- Nội dung email tại đây -->\n  </body>\n</html>",
+    "htmlNote": "Trong ứng dụng thực tế, đây sẽ là trình tạo email trực quan",
+    "sampleSubject": "Chào mừng đến với bản tin của chúng tôi!",
+    "sampleGreeting": "Xin chào! 👋",
+    "sampleBody": "Cảm ơn bạn đã đăng ký bản tin của chúng tôi. Chúng tôi rất vui khi có bạn đồng hành và mong muốn được chia sẻ những cập nhật thú vị với bạn.",
+    "sampleCTA": "Bắt đầu ngay →",
+    "sampleFooter": "© 2026 MK1 CRM. Bảo lưu mọi quyền.",
+    "categories": {
+      "promotional": "Khuyến mãi",
+      "newsletter": "Bản tin",
+      "transactional": "Giao dịch",
+      "announcement": "Thông báo"
+    }
   },
   "campaignWizard": {
     "title": "Tạo chiến dịch mới",
@@ -462,6 +521,80 @@
       "customerCaps": "Khách hàng",
       "dealCaps": "Giao dịch",
       "contractCaps": "Hợp đồng"
+    }
+  },
+  "Pipeline": {
+    "title": "Kênh bán hàng",
+    "subtitle": "Quản lý và theo dõi kênh bán hàng của bạn",
+    "description": "Quản lý và theo dõi kênh bán hàng của bạn",
+    "pipelineValue": "Giá trị kênh",
+    "wonValue": "Giá trị thắng",
+    "avgDealSize": "Giá trị TB",
+    "winRate": "Tỷ lệ thắng",
+    "newDeal": "Giao dịch mới",
+    "searchPlaceholder": "Tìm kiếm giao dịch..."
+  },
+  "Deals": {
+    "title": "Quản lý Cơ hội",
+    "description": "Quản lý cơ hội và giao dịch bán hàng",
+    "newDeal": "Giao dịch mới",
+    "table": {
+      "name": "Tên cơ hội",
+      "amount": "Giá trị",
+      "stage": "Giai đoạn",
+      "probability": "Xác suất",
+      "close_date": "Ngày chốt",
+      "owner": "Người phụ trách"
+    },
+    "value": "Giá trị",
+    "probability": "Khả năng (%)",
+    "closeDate": "Ngày đóng",
+    "stage": "Giai đoạn",
+    "products": "Sản phẩm",
+    "discountRate": "Tỷ lệ giảm giá"
+  },
+  "Common": {
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "all": "Tất cả",
+    "overview": "Tổng quan",
+    "details": "Chi tiết",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa"
+  },
+  "Status": {
+    "NEW": "Mới",
+    "CONTACTED": "Đã liên hệ",
+    "QUALIFIED": "Đủ điều kiện",
+    "PROPOSAL": "Báo giá",
+    "NEGOTIATION": "Thương lượng",
+    "WON": "Thành công",
+    "LOST": "Thất bại",
+    "HIGH": "Cao",
+    "MEDIUM": "Trung bình",
+    "LOW": "Thấp",
+    "URGENT": "Khẩn cấp",
+    "RESOLVED": "Đã giải quyết"
+  },
+  "Tasks": {
+    "title": "Nhiệm vụ",
+    "subtitle": "{completed}/{total} hoàn thành",
+    "description": "Theo dõi và quản lý nhiệm vụ",
+    "createTask": "Tạo nhiệm vụ",
+    "newTask": "Nhiệm vụ mới",
+    "showCompleted": "Hiện đã hoàn thành",
+    "dueToday": "Đến hạn hôm nay",
+    "overdue": "{count} trễ hạn",
+    "noTasks": "Không có nhiệm vụ",
+    "filterByPriority": "Lọc theo độ ưu tiên",
+    "table": {
+      "title": "Tiêu đề",
+      "dueDate": "Ngày đến hạn",
+      "priority": "Độ ưu tiên",
+      "status": "Trạng thái",
+      "assignee": "Người được giao"
     }
   }
 }

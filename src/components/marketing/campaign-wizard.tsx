@@ -29,8 +29,8 @@ interface CampaignWizardProps {
 }
 
 export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
-  const t = useTranslations("CampaignWizard");
-  const tc = useTranslations("Common");
+  const t = useTranslations("campaignWizard");
+  const tc = useTranslations("common");
   const [step, setStep] = useState(1);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [campaignData, setCampaignData] = useState({
@@ -73,66 +73,89 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-[600px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{t("title")}</SheetTitle>
-          <SheetDescription>
-            {t("description")}
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent className="sm:max-w-[640px] overflow-y-auto p-0">
+        <div className="bg-gradient-premium p-6 text-white">
+          <SheetHeader className="text-white">
+            <SheetTitle className="text-white text-xl">{t("title")}</SheetTitle>
+            <SheetDescription className="text-violet-100">
+              {t("description")}
+            </SheetDescription>
+          </SheetHeader>
+        </div>
 
         {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-2 my-6">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center">
-              <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
-                  s < step
-                    ? "bg-gradient-premium border-violet-500 text-white"
-                    : s === step
-                    ? "border-violet-500 text-violet-600"
-                    : "border-slate-300 text-slate-400"
-                }`}
-              >
-                {s < step ? <Check className="h-5 w-5" /> : s}
+        <div className="px-6 py-4 border-b bg-slate-50">
+          <div className="flex items-center justify-between max-w-md mx-auto">
+            {[
+              { num: 1, label: t("selectTemplate") },
+              { num: 2, label: t("editContent") },
+              { num: 3, label: t("audienceSchedule") }
+            ].map((s, idx) => (
+              <div key={s.num} className="flex items-center flex-1">
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all font-semibold ${
+                      s.num < step
+                        ? "bg-gradient-premium border-violet-500 text-white shadow-lg"
+                        : s.num === step
+                        ? "border-violet-500 text-violet-600 bg-white shadow-md"
+                        : "border-slate-300 text-slate-400 bg-white"
+                    }`}
+                  >
+                    {s.num < step ? <Check className="h-5 w-5" /> : s.num}
+                  </div>
+                  <span className={`text-xs mt-1.5 font-medium text-center max-w-[80px] ${
+                    s.num <= step ? "text-violet-600" : "text-slate-400"
+                  }`}>
+                    {s.label}
+                  </span>
+                </div>
+                {idx < 2 && (
+                  <div
+                    className={`flex-1 h-0.5 mx-3 transition-colors ${
+                      s.num < step ? "bg-violet-500" : "bg-slate-300"
+                    }`}
+                  />
+                )}
               </div>
-              {s < 3 && (
-                <div
-                  className={`w-16 h-0.5 mx-2 transition-colors ${
-                    s < step ? "bg-violet-500" : "bg-slate-300"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Step Content */}
-        <div className="mt-6 space-y-6">
+        <div className="p-6 space-y-6">
           {/* Step 1: Select Template */}
           {step === 1 && (
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t("step")} 1: {t("selectTemplate")}</h3>
-                <p className="text-sm text-slate-600">{t("selectTemplateDesc")}</p>
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">{t("selectTemplateDesc")}</h3>
               </div>
-              <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4 max-h-[380px] overflow-y-auto pr-1">
                 {mockTemplates.map((template) => (
                   <div
                     key={template.id}
                     onClick={() => setSelectedTemplate(template.id)}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-violet-300 ${
+                    className={`p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-violet-300 hover:shadow-md ${
                       selectedTemplate === template.id
-                        ? "border-violet-500 bg-violet-50"
-                        : "border-slate-200"
+                        ? "border-violet-500 bg-violet-50 shadow-lg ring-2 ring-violet-200"
+                        : "border-slate-200 bg-white"
                     }`}
                   >
-                    <div className="aspect-video bg-gradient-subtle rounded mb-2 flex items-center justify-center text-3xl">
+                    <div className="aspect-video bg-gradient-to-br from-violet-100 to-indigo-100 rounded-lg mb-3 flex items-center justify-center text-4xl shadow-inner">
                       📧
                     </div>
-                    <h4 className="font-medium text-sm mb-1">{template.name}</h4>
-                    <p className="text-xs text-slate-500 line-clamp-2">{template.description}</p>
-                    <div className="mt-2 text-xs text-slate-400">{t("used")} {template.usageCount}x</div>
+                    <h4 className="font-semibold text-sm mb-1 text-slate-900">{template.name}</h4>
+                    <p className="text-xs text-slate-500 line-clamp-2 mb-2">{template.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                        {t("used")} {template.usageCount}x
+                      </span>
+                      {selectedTemplate === template.id && (
+                        <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
+                          <Check className="h-3 w-3" /> {tc("selected")}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -142,40 +165,42 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
           {/* Step 2: Edit Content */}
           {step === 2 && (
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t("step")} 2: {t("editContent")}</h3>
-                <p className="text-sm text-slate-600">{t("editContentDesc")}</p>
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">{t("editContentDesc")}</h3>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-5 bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <div>
-                  <Label htmlFor="campaign-name">{t("campaignName")}</Label>
+                  <Label htmlFor="campaign-name" className="text-slate-700 font-medium">{t("campaignName")} <span className="text-red-500">*</span></Label>
                   <Input
                     id="campaign-name"
                     placeholder={t("campaignNamePlaceholder")}
                     value={campaignData.name}
                     onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })}
+                    className="mt-1.5 bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="subject">{t("subject")}</Label>
+                  <Label htmlFor="subject" className="text-slate-700 font-medium">{t("subject")}</Label>
                   <Input
                     id="subject"
                     placeholder={t("subjectPlaceholder")}
                     value={campaignData.subject}
                     onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })}
+                    className="mt-1.5 bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="content">{t("contentPreview")}</Label>
+                  <Label htmlFor="content" className="text-slate-700 font-medium">{t("contentPreview")}</Label>
                   <Textarea
                     id="content"
                     rows={6}
                     placeholder={t("contentPlaceholder")}
                     value={campaignData.content}
                     onChange={(e) => setCampaignData({ ...campaignData, content: e.target.value })}
+                    className="mt-1.5 bg-white resize-none"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    {t("richTextNote")}
+                  <p className="text-xs text-slate-500 mt-2 italic">
+                    💡 {t("richTextNote")}
                   </p>
                 </div>
               </div>
@@ -185,63 +210,66 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
           {/* Step 3: Select Audience & Schedule */}
           {step === 3 && (
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t("step")} 3: {t("audienceSchedule")}</h3>
-                <p className="text-sm text-slate-600">{t("audienceScheduleDesc")}</p>
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">{t("audienceScheduleDesc")}</h3>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="audience">{t("audienceSegment")}</Label>
+              <div className="space-y-5">
+                <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                  <Label htmlFor="audience" className="text-slate-700 font-medium flex items-center gap-2">
+                    👥 {t("audienceSegment")} <span className="text-red-500">*</span>
+                  </Label>
                   <Select value={campaignData.audience} onValueChange={(value) => setCampaignData({ ...campaignData, audience: value })}>
-                    <SelectTrigger id="audience">
+                    <SelectTrigger id="audience" className="mt-2 bg-white">
                       <SelectValue placeholder={t("selectAudience")} />
                     </SelectTrigger>
                     <SelectContent>
                       {mockAudienceSegments.map((segment) => (
                         <SelectItem key={segment.id} value={segment.id}>
-                          {segment.name} ({segment.count.toLocaleString()} {t("contacts")})
+                          <span className="font-medium">{segment.name}</span>
+                          <span className="text-slate-500 ml-2">({segment.count.toLocaleString()} {t("contacts")})</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>{t("sendingSchedule")}</Label>
+                <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                  <Label className="text-slate-700 font-medium flex items-center gap-2">📅 {t("sendingSchedule")}</Label>
                   <Select
                     value={campaignData.scheduleType}
                     onValueChange={(value) => setCampaignData({ ...campaignData, scheduleType: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-2 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="now">{t("sendNow")}</SelectItem>
-                      <SelectItem value="schedule">{t("scheduleLater")}</SelectItem>
+                      <SelectItem value="now">🚀 {t("sendNow")}</SelectItem>
+                      <SelectItem value="schedule">⏰ {t("scheduleLater")}</SelectItem>
                     </SelectContent>
                   </Select>
+                  {campaignData.scheduleType === "schedule" && (
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <Label htmlFor="schedule-date" className="text-slate-700 font-medium">{t("scheduleDateTime")}</Label>
+                      <Input
+                        id="schedule-date"
+                        type="datetime-local"
+                        value={campaignData.scheduleDate}
+                        onChange={(e) => setCampaignData({ ...campaignData, scheduleDate: e.target.value })}
+                        className="mt-2 bg-white"
+                      />
+                    </div>
+                  )}
                 </div>
-                {campaignData.scheduleType === "schedule" && (
-                  <div>
-                    <Label htmlFor="schedule-date">{t("scheduleDateTime")}</Label>
-                    <Input
-                      id="schedule-date"
-                      type="datetime-local"
-                      value={campaignData.scheduleDate}
-                      onChange={(e) => setCampaignData({ ...campaignData, scheduleDate: e.target.value })}
-                    />
-                  </div>
-                )}
               </div>
             </div>
           )}
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t">
+        <div className="flex items-center justify-between p-6 border-t bg-slate-50">
           <Button
             variant="outline"
             onClick={step === 1 ? handleClose : handlePrevious}
-            className="cursor-pointer"
+            className="cursor-pointer px-6"
           >
             {step === 1 ? tc("cancel") : (
               <>
@@ -254,13 +282,17 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
             <Button
               onClick={handleNext}
               disabled={step === 1 && !selectedTemplate}
-              className="bg-gradient-premium cursor-pointer"
+              className="bg-gradient-premium cursor-pointer px-6 shadow-lg hover:shadow-xl transition-shadow"
             >
               {tc("next")}
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} className="bg-gradient-premium cursor-pointer" disabled={!campaignData.name || !campaignData.audience}>
+            <Button 
+              onClick={handleSubmit} 
+              className="bg-gradient-premium cursor-pointer px-6 shadow-lg hover:shadow-xl transition-shadow" 
+              disabled={!campaignData.name || !campaignData.audience}
+            >
               <Check className="h-4 w-4 mr-2" />
               {t("createCampaign")}
             </Button>

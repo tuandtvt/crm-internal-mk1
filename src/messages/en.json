@@ -27,7 +27,8 @@
     "all": "All",
     "overview": "Overview",
     "details": "Details",
-    "settings": "Settings"
+    "settings": "Settings",
+    "selected": "Selected"
   },
   "auth": {
     "login": {
@@ -190,7 +191,25 @@
     "creating": "Creating...",
     "updateCustomer": "Update Customer",
     "createCustomer": "Create New Customer",
+    "companyProfile": "Company Profile",
+    "website": "Website",
+    "industry": "Industry",
+    "linkedIn": "LinkedIn/Social",
+    "leadNote": "Lead Note/Status",
+    "competitors": "Similar Projects",
+    "intelligence": "Lead Intelligence",
     "addNew": "Add New"
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "subtitle": "Manage and track your sales pipeline",
+    "description": "Manage and track your sales pipeline",
+    "pipelineValue": "Pipeline Value",
+    "wonValue": "Won Value",
+    "avgDealSize": "Avg Deal Size",
+    "winRate": "Win Rate",
+    "newDeal": "New Deal",
+    "searchPlaceholder": "Search deals..."
   },
   "deals": {
     "title": "Deals Management",
@@ -346,6 +365,7 @@
   "marketing": {
     "title": "Marketing Overview",
     "description": "Track your email campaigns and engagement metrics",
+    "managerDescription": "Manage and track all your marketing campaigns",
     "campaigns": "Campaigns",
     "templates": "Templates",
     "overview": "Overview",
@@ -359,12 +379,16 @@
     "recentCampaigns": "Recent Campaigns",
     "viewAll": "View all",
     "sent": "sent",
-    "open": "open",
-    "click": "click",
+    "open": "Open",
+    "click": "Click",
+    "conversion": "Conversion",
     "performanceTrend": "Campaign Performance Trend",
     "last7Days": "Last 7 days email activity",
     "legendSent": "Sent",
-    "legendOpened": "Opened"
+    "legendOpened": "Opened",
+    "filterByStatus": "Filter by status",
+    "sendingProgress": "Sending Progress",
+    "scheduledFor": "Scheduled for"
   },
   "support": {
     "title": "Support Tickets",
@@ -415,6 +439,41 @@
     "customersImported": "customers imported successfully!",
     "preparingExport": "Preparing CSV export...",
     "downloadStarted": "Download started! Check your downloads folder."
+  },
+  "templates": {
+    "title": "Email Templates",
+    "description": "Browse and manage professional email templates",
+    "createTemplate": "Create Template",
+    "createDescription": "Design a new email template for your campaigns",
+    "filterByCategory": "Filter by category",
+    "viewDetail": "View",
+    "preview": "Template Preview",
+    "used": "used",
+    "timesUsed": "Times Used",
+    "created": "Created",
+    "lastModified": "Last Modified",
+    "useTemplate": "Use Template",
+    "duplicate": "Duplicate",
+    "copy": "Copy",
+    "templateName": "Template Name",
+    "templateNamePlaceholder": "e.g., Summer Promotion",
+    "category": "Category",
+    "templateDescription": "Description",
+    "templateDescriptionPlaceholder": "Describe what this template is for...",
+    "htmlContent": "HTML Content",
+    "htmlContentPlaceholder": "<html>\n  <body>\n    <!-- Your email content here -->\n  </body>\n</html>",
+    "htmlNote": "In a real app, this would be a visual email builder",
+    "sampleSubject": "Welcome to Our Newsletter!",
+    "sampleGreeting": "Hello there! 👋",
+    "sampleBody": "Thank you for subscribing to our newsletter. We're excited to have you on board and can't wait to share exciting updates with you.",
+    "sampleCTA": "Get Started →",
+    "sampleFooter": "© 2026 MK1 CRM. All rights reserved.",
+    "categories": {
+      "promotional": "Promotional",
+      "newsletter": "Newsletter",
+      "transactional": "Transactional",
+      "announcement": "Announcement"
+    }
   },
   "campaignWizard": {
     "title": "Create New Campaign",
@@ -474,6 +533,80 @@
       "customerCaps": "Customer",
       "dealCaps": "Deal",
       "contractCaps": "Contract"
+    }
+  },
+  "Pipeline": {
+    "title": "Pipeline",
+    "subtitle": "Manage and track your sales pipeline",
+    "description": "Manage and track your sales pipeline",
+    "pipelineValue": "Pipeline Value",
+    "wonValue": "Won Value",
+    "avgDealSize": "Avg Deal Size",
+    "winRate": "Win Rate",
+    "newDeal": "New Deal",
+    "searchPlaceholder": "Search deals..."
+  },
+  "Deals": {
+    "title": "Deals Management",
+    "description": "Manage sales opportunities and deals",
+    "newDeal": "New Deal",
+    "table": {
+      "name": "Opportunity Name",
+      "amount": "Value",
+      "stage": "Stage",
+      "probability": "Probability",
+      "close_date": "Close Date",
+      "owner": "Owner"
+    },
+    "value": "Value",
+    "probability": "Probability (%)",
+    "closeDate": "Close Date",
+    "stage": "Stage",
+    "products": "Products",
+    "discountRate": "Discount Rate"
+  },
+  "Common": {
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "overview": "Overview",
+    "details": "Details",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "Status": {
+    "NEW": "New",
+    "CONTACTED": "Contacted",
+    "QUALIFIED": "Qualified",
+    "PROPOSAL": "Proposal",
+    "NEGOTIATION": "Negotiation",
+    "WON": "Won",
+    "LOST": "Lost",
+    "HIGH": "High",
+    "MEDIUM": "Medium",
+    "LOW": "Low",
+    "URGENT": "Urgent",
+    "RESOLVED": "Resolved"
+  },
+  "Tasks": {
+    "title": "Tasks",
+    "subtitle": "{completed}/{total} completed",
+    "description": "Track and manage your tasks",
+    "createTask": "Create Task",
+    "newTask": "New Task",
+    "showCompleted": "Show Completed",
+    "dueToday": "Due Today",
+    "overdue": "{count} overdue",
+    "noTasks": "No tasks found",
+    "filterByPriority": "Filter by priority",
+    "table": {
+      "title": "Task Title",
+      "dueDate": "Due Date",
+      "priority": "Priority",
+      "status": "Status",
+      "assignee": "Assignee"
     }
   }
 }

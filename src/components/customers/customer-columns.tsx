@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Globe, Users, MessageSquare, Phone, Calendar, Zap } from "lucide-react";
+import { ArrowUpDown, Globe, Users, MessageSquare, Phone, Calendar, Zap, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Get source icon
@@ -79,11 +79,56 @@ export const customerColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => (
       <div>
         <p className="font-medium text-foreground">{row.original.company_name || '-'}</p>
-        <Badge variant="secondary" className="mt-1 text-xs font-normal">
-          {row.original.source || '-'}
-        </Badge>
+        {row.original.lead_note && (
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1" title={row.original.lead_note}>
+            {row.original.lead_note}
+          </p>
+        )}
       </div>
     ),
+  },
+  {
+    accessorKey: "industry",
+    header: "Industry",
+    cell: ({ row }) => {
+      if (!row.original.industry) return <span className="text-muted-foreground">-</span>;
+      
+      // Industry color mapping
+      const industryColors: Record<string, { bg: string; text: string }> = {
+        EdTech: { bg: "bg-blue-100", text: "text-blue-700" },
+        HealthTech: { bg: "bg-green-100", text: "text-green-700" },
+        FinTech: { bg: "bg-purple-100", text: "text-purple-700" },
+        "E-commerce": { bg: "bg-orange-100", text: "text-orange-700" },
+        SaaS: { bg: "bg-indigo-100", text: "text-indigo-700" },
+      };
+      
+      const colors = industryColors[row.original.industry] || { bg: "bg-slate-100", text: "text-slate-700" };
+      
+      return (
+        <Badge className={cn(colors.bg, colors.text, "hover:" + colors.bg)}>
+          {row.original.industry}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "website",
+    header: "Website",
+    cell: ({ row }) => {
+      if (!row.original.website) return <span className="text-muted-foreground">-</span>;
+      
+      return (
+        <a
+          href={row.original.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700 hover:underline"
+        >
+          <Globe className="h-4 w-4" />
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      );
+    },
   },
   {
     accessorKey: "source",

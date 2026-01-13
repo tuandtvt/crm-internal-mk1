@@ -190,56 +190,106 @@ export default function TasksPage({ params: { locale } }: { params: { locale: st
               {t("createTask")}
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle>{t("createTask")}</SheetTitle>
-              <SheetDescription>
-                {tc("details")}
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">{t("table.title")}</Label>
-                <Input id="title" placeholder="..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">{tc("details")}</Label>
-                <Textarea id="description" placeholder="..." rows={3} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dueDate">{t("table.dueDate")}</Label>
-                  <Input id="dueDate" type="date" />
+          <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
+            <SheetHeader className="px-6 py-5 border-b bg-gradient-to-r from-indigo-50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-indigo-600" />
                 </div>
+                <div>
+                  <SheetTitle className="text-lg">{t("createTask")}</SheetTitle>
+                  <SheetDescription className="text-sm text-slate-500">
+                    {t("description")}
+                  </SheetDescription>
+                </div>
+              </div>
+            </SheetHeader>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+              {/* Task Details Section */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-slate-500" />
+                  {tc("details")}
+                </h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">{t("table.title")}</Label>
+                    <Input id="title" placeholder="Nhập tiêu đề nhiệm vụ..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">{tc("details")}</Label>
+                    <Textarea 
+                      id="description" 
+                      placeholder="Mô tả chi tiết nhiệm vụ..." 
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule & Priority Section */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-slate-500" />
+                  {t("table.dueDate")} & {t("table.priority")}
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dueDate">{t("table.dueDate")}</Label>
+                    <Input id="dueDate" type="date" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">{t("table.priority")}</Label>
+                    <Select defaultValue="medium">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="high">{ts("HIGH")}</SelectItem>
+                        <SelectItem value="medium">{ts("MEDIUM")}</SelectItem>
+                        <SelectItem value="low">{ts("LOW")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Related Customer Section */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                  <User className="h-4 w-4 text-slate-500" />
+                  {t("table.assignee")}
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="priority">{t("table.priority")}</Label>
-                  <Select defaultValue="medium">
+                  <Label htmlFor="customer">Khách hàng liên quan</Label>
+                  <Select>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Chọn khách hàng (tùy chọn)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high">{ts("HIGH")}</SelectItem>
-                      <SelectItem value="medium">{ts("MEDIUM")}</SelectItem>
-                      <SelectItem value="low">{ts("LOW")}</SelectItem>
+                      <SelectItem value="techcorp">TechCorp Inc.</SelectItem>
+                      <SelectItem value="healthcare">HealthCare+</SelectItem>
+                      <SelectItem value="edulearn">EduLearn Academy</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="flex-1"
-                  onClick={() => setIsSheetOpen(false)}
-                >
-                  {tc("cancel")}
-                </Button>
-                <Button 
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-                  onClick={() => setIsSheetOpen(false)}
-                >
-                  {t("createTask")}
-                </Button>
-              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t bg-slate-50 flex items-center justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsSheetOpen(false)}
+              >
+                {tc("cancel")}
+              </Button>
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700 min-w-[140px]"
+                onClick={() => setIsSheetOpen(false)}
+              >
+                {t("createTask")}
+              </Button>
             </div>
           </SheetContent>
         </Sheet>

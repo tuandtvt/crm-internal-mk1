@@ -68,22 +68,12 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Lightbulb,
+  Linkedin,
 } from "lucide-react";
 import { toast } from "sonner";
-
-// Types
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  industry: string;
-  source: string;
-  type: "lead" | "prospect" | "vip";
-  owner: string;
-  updatedAt: Date;
-}
+import { Customer } from "@/types";
+import { mockCustomers } from "@/lib/mock-data/customers";
 
 // Company options (should probably come from translations/DB too, but keeping ID based for now)
 const COMPANIES = [
@@ -131,11 +121,17 @@ function CustomerSheet({
     lastName: customer?.name.split(" ")[1] || "",
     email: customer?.email || "",
     phone: customer?.phone || "",
-    company: customer?.company || "",
+    company: customer?.company_name || "",
     position: "",
     source: customer?.source || "",
     status: customer?.type || "lead",
     address: "",
+    // B2B Fields
+    website: customer?.website || "",
+    industry: customer?.industry || "",
+    linkedIn: customer?.linkedin_url || "",
+    leadNote: customer?.lead_note || "",
+    competitors: customer?.competitors || "",
   });
 
   const handleSubmit = async () => {
@@ -152,7 +148,7 @@ function CustomerSheet({
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
-      company: formData.company,
+      company_name: formData.company,
       source: formData.source,
       type: formData.status as "lead" | "prospect" | "vip",
     });
@@ -326,6 +322,90 @@ function CustomerSheet({
                       <SelectItem value="vip">{t("vip")}</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Company Profile Section - B2B Fields */}
+            <div>
+              <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-slate-500" />
+                {t("companyProfile")}
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="website">{t("website")}</Label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="website"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      className="pl-10"
+                      placeholder="https://company.com"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="industry">{t("industry")}</Label>
+                  <Select 
+                    value={formData.industry} 
+                    onValueChange={(value) => setFormData({ ...formData, industry: value })}
+                  >
+                    <SelectTrigger id="industry">
+                      <SelectValue placeholder={t("industry")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EdTech">EdTech</SelectItem>
+                      <SelectItem value="HealthTech">HealthTech</SelectItem>
+                      <SelectItem value="FinTech">FinTech</SelectItem>
+                      <SelectItem value="E-commerce">E-commerce</SelectItem>
+                      <SelectItem value="SaaS">SaaS</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="linkedIn">{t("linkedIn")}</Label>
+                  <div className="relative">
+                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="linkedIn"
+                      value={formData.linkedIn}
+                      onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
+                      className="pl-10"
+                      placeholder="https://linkedin.com/company/..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Lead Intelligence Section - B2B Fields */}
+            <div>
+              <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-slate-500" />
+                {t("intelligence")}
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="leadNote">{t("leadNote")}</Label>
+                  <Textarea
+                    id="leadNote"
+                    value={formData.leadNote}
+                    onChange={(e) => setFormData({ ...formData, leadNote: e.target.value })}
+                    placeholder="e.g., Vừa gọi vốn Series B 15 tỷ, đang mở rộng thị trường..."
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="competitors">{t("competitors")}</Label>
+                  <Input
+                    id="competitors"
+                    value={formData.competitors}
+                    onChange={(e) => setFormData({ ...formData, competitors: e.target.value })}
+                    placeholder="e.g., Giống Fluentgo, ELSA Speak, Topica"
+                  />
                 </div>
               </div>
             </div>
