@@ -1,13 +1,26 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Lead } from "@/types";
 import { formatCurrency } from "@/lib/pipeline-config";
 import { StageProgress } from "./stage-progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Deal interface for pipeline
+export interface Deal {
+  id: string;
+  name: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  stage: string;
+  probability: number;
+  owner: string;
+  ownerAvatar: string;
+  closingDate: Date;
+}
 
 // Check if date is in the past
 function isOverdue(date: Date): boolean {
@@ -37,9 +50,9 @@ function formatClosingDate(date: Date): { text: string; overdue: boolean } {
   };
 }
 
-export const pipelineColumns: ColumnDef<Lead>[] = [
+export const pipelineColumns: ColumnDef<Deal>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "name",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -52,7 +65,7 @@ export const pipelineColumns: ColumnDef<Lead>[] = [
     ),
     cell: ({ row }) => (
       <div>
-        <p className="font-medium text-foreground">{row.original.title}</p>
+        <p className="font-medium text-foreground">{row.original.name}</p>
         <p className="text-xs text-muted-foreground">
           {row.original.customerName}
         </p>
@@ -60,7 +73,7 @@ export const pipelineColumns: ColumnDef<Lead>[] = [
     ),
   },
   {
-    accessorKey: "value",
+    accessorKey: "amount",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -73,7 +86,7 @@ export const pipelineColumns: ColumnDef<Lead>[] = [
     ),
     cell: ({ row }) => (
       <span className="font-bold text-foreground">
-        {formatCurrency(row.original.value)}
+        {formatCurrency(row.original.amount)}
       </span>
     ),
   },

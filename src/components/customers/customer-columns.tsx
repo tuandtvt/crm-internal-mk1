@@ -65,7 +65,7 @@ export const customerColumns: ColumnDef<Customer>[] = [
     },
   },
   {
-    accessorKey: "company",
+    accessorKey: "company_name",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -78,9 +78,9 @@ export const customerColumns: ColumnDef<Customer>[] = [
     ),
     cell: ({ row }) => (
       <div>
-        <p className="font-medium text-foreground">{row.original.company}</p>
+        <p className="font-medium text-foreground">{row.original.company_name || '-'}</p>
         <Badge variant="secondary" className="mt-1 text-xs font-normal">
-          {row.original.industry}
+          {row.original.source || '-'}
         </Badge>
       </div>
     ),
@@ -94,8 +94,8 @@ export const customerColumns: ColumnDef<Customer>[] = [
       );
       return (
         <div className="flex items-center gap-2 text-muted-foreground">
-          {getSourceIcon(row.original.source)}
-          <span className="text-sm">{sourceConfig?.label || row.original.source}</span>
+          {getSourceIcon(row.original.source || '')}
+          <span className="text-sm">{sourceConfig?.label || row.original.source || '-'}</span>
         </div>
       );
     },
@@ -104,10 +104,11 @@ export const customerColumns: ColumnDef<Customer>[] = [
     },
   },
   {
-    accessorKey: "customerType",
+    accessorKey: "type",
     header: "Status",
     cell: ({ row }) => {
-      const typeConfig = CUSTOMER_TYPES[row.original.customerType];
+      const typeConfig = CUSTOMER_TYPES[row.original.type as keyof typeof CUSTOMER_TYPES];
+      if (!typeConfig) return <span>-</span>;
       return (
         <span
           className={cn(
@@ -125,7 +126,7 @@ export const customerColumns: ColumnDef<Customer>[] = [
     },
   },
   {
-    accessorKey: "updatedAt",
+    accessorKey: "updated_at",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -138,7 +139,7 @@ export const customerColumns: ColumnDef<Customer>[] = [
     ),
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {formatRelativeTime(row.original.updatedAt)}
+        {row.original.updated_at ? formatRelativeTime(row.original.updated_at) : '-'}
       </span>
     ),
   },
@@ -146,11 +147,14 @@ export const customerColumns: ColumnDef<Customer>[] = [
     accessorKey: "owner",
     header: "Owner",
     cell: ({ row }) => {
-      const initials = row.original.owner
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase();
+      const ownerName = row.original.owner?.name || '-';
+      const initials = ownerName !== '-' 
+        ? ownerName
+          .split(" ")
+          .map((n: string) => n[0])
+          .join("")
+          .toUpperCase()
+        : '?';
 
       return (
         <div className="flex items-center gap-2">
@@ -160,7 +164,7 @@ export const customerColumns: ColumnDef<Customer>[] = [
             </AvatarFallback>
           </Avatar>
           <span className="text-sm text-muted-foreground hidden lg:inline">
-            {row.original.owner}
+            {ownerName}
           </span>
         </div>
       );

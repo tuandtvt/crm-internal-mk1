@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PipelineStage } from "@/types";
 import {
   PIPELINE_STAGES,
   getStageConfig,
@@ -17,8 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 interface StageProgressProps {
-  currentStage: PipelineStage;
-  onStageChange?: (newStage: PipelineStage) => void;
+  currentStage: string;
+  onStageChange?: (newStage: string) => void;
   readonly?: boolean;
 }
 
@@ -34,7 +33,7 @@ export function StageProgress({
     (s) => s.id !== "won" && s.id !== "lost"
   );
 
-  const handleStageSelect = (stage: PipelineStage) => {
+  const handleStageSelect = (stage: string) => {
     if (onStageChange) {
       onStageChange(stage);
     }
@@ -56,7 +55,7 @@ export function StageProgress({
       {/* Mini stepper visualization */}
       <div className="flex-1">
         <div className="flex items-center gap-0.5 mb-1">
-          {activeStages.map((stage, idx) => {
+          {activeStages.map((stage) => {
             const isActive = stage.order <= getStageConfig(currentStage).order;
             const isCurrent = stage.id === currentStage;
             return (

@@ -43,7 +43,11 @@ export const INDUSTRIES = [
   "Other",
 ];
 
-// Mock customer data
+
+// Mock customer data - COMMENTED OUT due to type mismatch
+// This mock data uses old property names that don't match the Customer type from @/types
+// If you need mock data, please update it to match the actual Customer interface
+/*
 export const mockCustomers: Customer[] = [
   {
     id: "c1",
@@ -158,6 +162,8 @@ export const mockCustomers: Customer[] = [
     tags: ["education", "pilot"],
   },
 ];
+*/
+
 
 // Format relative time
 export function formatRelativeTime(date: Date): string {
