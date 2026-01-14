@@ -218,7 +218,21 @@
     "leadNote": "Ghi chú/Tình trạng Lead",
     "competitors": "Dự án tương đồng",
     "intelligence": "Thông tin Lead",
-    "addNew": "Thêm mới"
+    "addNew": "Thêm mới",
+    "totalRevenue": "Tổng doanh thu",
+    "activeDeal": "Deal đang mở",
+    "tags": "Tags",
+    "noTags": "Chưa có tag",
+    "addTag": "Thêm tag",
+    "refCode": "Mã giới thiệu",
+    "interactionHistory": "Lịch sử tương tác",
+    "addNote": "Thêm ghi chú",
+    "noHistory": "Chưa có lịch sử tương tác",
+    "tasks": "Lịch hẹn",
+    "createReminder": "Tạo nhắc nhở",
+    "noTasks": "Chưa có lịch hẹn",
+    "allTags": "Tất cả Tags",
+    "allStatuses": "Tất cả trạng thái"
   },
   "leads": {
     "title": "Quản lý Lead",
@@ -293,7 +307,8 @@
     "HIGH": "Cao",
     "MEDIUM": "Trung bình",
     "LOW": "Thấp",
-    "URGENT": "Khẩn cấp"
+    "URGENT": "Khẩn cấp",
+    "QUALIFIED": "Đạt tiêu chuẩn"
   },
   "admin": {
     "title": "Quản trị hệ thống",

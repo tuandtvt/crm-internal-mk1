@@ -98,6 +98,15 @@ export interface Department {
 // ==========================================
 
 export type CustomerType = "LEAD" | "CUSTOMER";
+export type InteractionType = "NOTE" | "CALL" | "MEETING";
+
+export interface InteractionHistoryItem {
+  id: string;
+  content: string;
+  type: InteractionType;
+  created_at: string;
+  created_by: string;
+}
 
 export interface Customer extends BaseEntity {
   id: number;
@@ -118,6 +127,10 @@ export interface Customer extends BaseEntity {
   linkedin_url?: string; // LinkedIn or social profile URL
   lead_note?: string; // Lead status/intelligence (e.g., "Just raised Series B", "Released new app")
   competitors?: string; // Similar projects/competitors (e.g., "Giống Fluentgo")
+  // Sales Interaction Fields
+  tags?: string[]; // Customer tags (e.g., "VIP", "High Potential", "Price Sensitive")
+  ref_code?: string; // Referral code (e.g., "REF-2024-001")
+  interaction_history?: InteractionHistoryItem[]; // Interaction history (notes, calls, meetings)
   // Relationships
   owner?: User;
   status?: Status;

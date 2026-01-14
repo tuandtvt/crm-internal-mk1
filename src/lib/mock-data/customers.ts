@@ -21,13 +21,32 @@ export const mockCustomers: Customer[] = [
     source: "LinkedIn",
     logo_url: "/logos/manabie.png",
     owner_id: 1,
-    status_id: 3, // QUALIFIED
+    status_id: 3, // QUOTED
     // B2B Fields
     website: "https://manabie.com",
     industry: "EdTech",
     linkedin_url: "https://linkedin.com/company/manabie",
     lead_note: "Vừa gọi vốn Series B $15M từ Softbank, đang mở rộng thị trường Đông Nam Á",
     competitors: "Fluentgo, ELSA Speak, Topica",
+    // Sales Interaction Fields
+    tags: ["VIP", "High Potential"],
+    ref_code: "REF-2024-001",
+    interaction_history: [
+      {
+        id: "ih-1",
+        content: "Đã gọi điện tư vấn gói Enterprise, khách hàng quan tâm đến tính năng báo cáo",
+        type: "CALL",
+        created_at: "2026-01-10T10:30:00Z",
+        created_by: "Jane Smith",
+      },
+      {
+        id: "ih-2",
+        content: "Gửi báo giá gói Enterprise - 50 users, $2000/tháng",
+        type: "NOTE",
+        created_at: "2026-01-08T14:00:00Z",
+        created_by: "Jane Smith",
+      },
+    ],
     created_at: new Date("2025-12-15"),
     updated_at: new Date("2026-01-10"),
   },
@@ -44,13 +63,25 @@ export const mockCustomers: Customer[] = [
     source: "Event",
     logo_url: "/logos/fitx.png",
     owner_id: 2,
-    status_id: 2, // CONTACTED
+    status_id: 2, // CONSULTING
     // B2B Fields
     website: "https://fitx.vn",
     industry: "HealthTech",
     linkedin_url: "https://linkedin.com/company/fitx-vietnam",
     lead_note: "Ra mắt app fitness mới tháng 12/2025, có 50K+ downloads trong tháng đầu",
     competitors: "Jio Health, Doctor Anywhere, Halodoc",
+    // Sales Interaction Fields
+    tags: ["Price Sensitive"],
+    ref_code: "REF-2024-002",
+    interaction_history: [
+      {
+        id: "ih-3",
+        content: "Meeting tại văn phòng khách hàng, demo sản phẩm thành công",
+        type: "MEETING",
+        created_at: "2026-01-05T09:00:00Z",
+        created_by: "John Doe",
+      },
+    ],
     created_at: new Date("2025-11-20"),
     updated_at: new Date("2026-01-08"),
   },
@@ -67,13 +98,25 @@ export const mockCustomers: Customer[] = [
     source: "Referral",
     logo_url: "/logos/timo.png",
     owner_id: 1,
-    status_id: 4, // CONVERTED
+    status_id: 5, // CLOSED_WON
     // B2B Fields
     website: "https://timo.vn",
     industry: "FinTech",
     linkedin_url: "https://linkedin.com/company/timo-digital-bank",
     lead_note: "Đã ký hợp đồng Enterprise, đang tích hợp API thanh toán",
     competitors: "MoMo, ZaloPay, VNPay",
+    // Sales Interaction Fields
+    tags: ["VIP"],
+    ref_code: "REF-2024-003",
+    interaction_history: [
+      {
+        id: "ih-4",
+        content: "Ký hợp đồng thành công, giá trị $50,000/năm",
+        type: "NOTE",
+        created_at: "2026-01-12T16:00:00Z",
+        created_by: "Jane Smith",
+      },
+    ],
     created_at: new Date("2025-06-15"),
     updated_at: new Date("2026-01-12"),
   },
@@ -97,6 +140,9 @@ export const mockCustomers: Customer[] = [
     linkedin_url: "https://linkedin.com/company/elsa-speak",
     lead_note: "Có 30M+ users toàn cầu, đang tìm đối tác B2B cho thị trường doanh nghiệp VN",
     competitors: "Duolingo, Cake, Fluentgo",
+    // Sales Interaction Fields
+    tags: ["High Potential"],
+    ref_code: "REF-2024-004",
     created_at: new Date("2026-01-05"),
     updated_at: new Date("2026-01-05"),
   },
@@ -113,7 +159,10 @@ export const mockCustomers: Customer[] = [
     source: "Cold Call",
     logo_url: "/logos/techcorp.png",
     owner_id: 2,
-    status_id: 4, // CONVERTED
+    status_id: 6, // OLD_CUSTOMER
+    // Sales Interaction Fields
+    tags: ["Returning"],
+    ref_code: "REF-2024-005",
     created_at: new Date("2025-09-20"),
     updated_at: new Date("2026-01-08"),
   },
@@ -130,13 +179,16 @@ export const mockCustomers: Customer[] = [
     source: "Partner",
     logo_url: "/logos/shopee.png",
     owner_id: 1,
-    status_id: 2, // CONTACTED
+    status_id: 2, // CONSULTING
     // B2B Fields
     website: "https://shopee.vn",
     industry: "E-commerce",
     linkedin_url: "https://linkedin.com/company/shopee",
     lead_note: "Top 1 e-commerce platform VN, đang mở rộng Shopee Mall cho brands",
     competitors: "Lazada, Tiki, Sendo",
+    // Sales Interaction Fields
+    tags: ["VIP", "Enterprise"],
+    ref_code: "REF-2024-006",
     created_at: new Date("2025-12-18"),
     updated_at: new Date("2025-12-28"),
   },

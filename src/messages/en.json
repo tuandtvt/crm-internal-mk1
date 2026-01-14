@@ -218,7 +218,19 @@
     "leadNote": "Lead Note/Status",
     "competitors": "Similar Projects",
     "intelligence": "Lead Intelligence",
-    "addNew": "Add New"
+    "addNew": "Add New",
+    "totalRevenue": "Total Revenue",
+    "activeDeal": "Active Deals",
+    "tags": "Tags",
+    "noTags": "No tags yet",
+    "addTag": "Add tag",
+    "refCode": "Referral Code",
+    "interactionHistory": "Interaction History",
+    "addNote": "Add Note",
+    "noHistory": "No interaction history yet",
+    "tasks": "Tasks",
+    "createReminder": "Create Reminder",
+    "noTasks": "No tasks yet"
   },
   "leads": {
     "title": "Leads Management",
@@ -293,7 +305,8 @@
     "HIGH": "High",
     "MEDIUM": "Medium",
     "LOW": "Low",
-    "URGENT": "Urgent"
+    "URGENT": "Urgent",
+    "QUALIFIED": "Qualified"
   },
   "admin": {
     "title": "Administration",

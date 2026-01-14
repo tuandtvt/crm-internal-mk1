@@ -6,13 +6,13 @@ import type { Status } from "@/types";
  * Contains statuses for all entity types: LEAD, DEAL, CONTRACT, TASK, TICKET
  */
 
-// LEAD Statuses
+// LEAD Statuses (Sales Pipeline)
 export const LEAD_STATUSES: Status[] = [
   {
     id: 1,
     entity_type: "LEAD",
     code: "NEW",
-    name: "Mới",
+    name: "Lead mới",
     order_index: 1,
     is_final: false,
     is_active: true,
@@ -20,8 +20,8 @@ export const LEAD_STATUSES: Status[] = [
   {
     id: 2,
     entity_type: "LEAD",
-    code: "CONTACTED",
-    name: "Đã liên hệ",
+    code: "CONSULTING",
+    name: "Đang tư vấn",
     order_index: 2,
     is_final: false,
     is_active: true,
@@ -29,8 +29,8 @@ export const LEAD_STATUSES: Status[] = [
   {
     id: 3,
     entity_type: "LEAD",
-    code: "QUALIFIED",
-    name: "Đã đủ điều kiện",
+    code: "QUOTED",
+    name: "Đã báo giá",
     order_index: 3,
     is_final: false,
     is_active: true,
@@ -38,18 +38,27 @@ export const LEAD_STATUSES: Status[] = [
   {
     id: 4,
     entity_type: "LEAD",
-    code: "CONVERTED",
-    name: "Đã chuyển đổi",
+    code: "NEGOTIATION",
+    name: "Đang thương lượng",
     order_index: 4,
-    is_final: true,
+    is_final: false,
     is_active: true,
   },
   {
     id: 5,
     entity_type: "LEAD",
-    code: "LOST",
-    name: "Mất khách",
+    code: "CLOSED_WON",
+    name: "Đã chốt",
     order_index: 5,
+    is_final: true,
+    is_active: true,
+  },
+  {
+    id: 6,
+    entity_type: "LEAD",
+    code: "OLD_CUSTOMER",
+    name: "Khách cũ",
+    order_index: 6,
     is_final: true,
     is_active: true,
   },
@@ -278,10 +287,11 @@ export function getStatusColor(entityType: string, code: string): string {
   const colorMap: Record<string, Record<string, string>> = {
     LEAD: {
       NEW: "bg-blue-100 text-blue-700",
-      CONTACTED: "bg-indigo-100 text-indigo-700",
-      QUALIFIED: "bg-purple-100 text-purple-700",
-      CONVERTED: "bg-emerald-100 text-emerald-700",
-      LOST: "bg-slate-100 text-slate-700",
+      CONSULTING: "bg-indigo-100 text-indigo-700",
+      QUOTED: "bg-purple-100 text-purple-700",
+      NEGOTIATION: "bg-amber-100 text-amber-700",
+      CLOSED_WON: "bg-emerald-100 text-emerald-700",
+      OLD_CUSTOMER: "bg-slate-100 text-slate-700",
     },
     DEAL: {
       NEW: "bg-slate-100 text-slate-700",

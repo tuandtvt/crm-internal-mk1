@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CUSTOMER_SOURCES } from "@/lib/customer-config";
+import { LEAD_STATUSES } from "@/lib/mock-data/status";
+import { mockCustomers } from "@/lib/mock-data/customers";
 import {
   ChevronLeft,
   ChevronRight,
@@ -38,23 +40,59 @@ import {
   Download,
   Upload,
   Filter,
+  Tag,
 } from "lucide-react";
+import { Customer } from "@/types";
+import { Link } from "@/i18n/routing";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function CustomerTable<TData, TValue>({
+// Get unique tags from all customers
+function getUniqueTags(customers: Customer[]): string[] {
+  const allTags = customers.flatMap((c) => c.tags || []);
+  return [...new Set(allTags)].sort();
+}
+
+export function CustomerTable<TData extends Customer, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Get unique tags from data
+  const uniqueTags = useMemo(() => getUniqueTags(data), [data]);
+
+  // Filter data by tags and status
+  const filteredData = useMemo(() => {
+    let result = [...data];
+    
+    // Filter by tag
+    if (tagFilter !== "all") {
+      result = result.filter((customer) => 
+        customer.tags?.includes(tagFilter)
+      );
+    }
+    
+    // Filter by status
+    if (statusFilter !== "all") {
+      const statusId = parseInt(statusFilter, 10);
+      result = result.filter((customer) => 
+        customer.status_id === statusId
+      );
+    }
+    
+    return result;
+  }, [data, tagFilter, statusFilter]);
 
   const table = useReactTable({
-    data,
+    data: filteredData as TData[],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -79,6 +117,15 @@ export function CustomerTable<TData, TValue>({
     | string
     | undefined;
 
+  const hasActiveFilters = globalFilter || sourceFilter || tagFilter !== "all" || statusFilter !== "all";
+
+  const clearAllFilters = () => {
+    setGlobalFilter("");
+    table.getColumn("source")?.setFilterValue(undefined);
+    setTagFilter("all");
+    setStatusFilter("all");
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -93,6 +140,46 @@ export function CustomerTable<TData, TValue>({
               className="pl-9"
             />
           </div>
+          
+          {/* Tag Filter */}
+          <Select
+            value={tagFilter}
+            onValueChange={setTagFilter}
+          >
+            <SelectTrigger className="w-[160px]">
+              <Tag className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả Tags</SelectItem>
+              {uniqueTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Status Filter */}
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <Filter className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              {LEAD_STATUSES.map((status) => (
+                <SelectItem key={status.id} value={status.id.toString()}>
+                  {status.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Source Filter */}
           <Select
             value={sourceFilter ?? "all"}
             onValueChange={(value) => {
@@ -108,7 +195,7 @@ export function CustomerTable<TData, TValue>({
               <SelectValue placeholder="Source" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="all">Tất cả nguồn</SelectItem>
               {CUSTOMER_SOURCES.map((source) => (
                 <SelectItem key={source.id} value={source.id}>
                   {source.label}
@@ -116,18 +203,16 @@ export function CustomerTable<TData, TValue>({
               ))}
             </SelectContent>
           </Select>
-          {(globalFilter || sourceFilter) && (
+
+          {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setGlobalFilter("");
-                table.getColumn("source")?.setFilterValue(undefined);
-              }}
+              onClick={clearAllFilters}
               className="h-9 px-2"
             >
               <X className="h-4 w-4 mr-1" />
-              Clear
+              Xóa bộ lọc
             </Button>
           )}
         </div>
@@ -145,7 +230,7 @@ export function CustomerTable<TData, TValue>({
 
       {/* Results count */}
       <div className="text-sm text-muted-foreground">
-        {table.getFilteredRowModel().rows.length} customers
+        {table.getFilteredRowModel().rows.length} khách hàng
       </div>
 
       {/* Table */}
@@ -177,10 +262,12 @@ export function CustomerTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      <Link href={`/sales/customers/${(row.original as Customer).id}`}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </Link>
                     </TableCell>
                   ))}
                 </TableRow>
@@ -191,7 +278,7 @@ export function CustomerTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No customers found.
+                  Không tìm thấy khách hàng.
                 </TableCell>
               </TableRow>
             )}
@@ -202,8 +289,7 @@ export function CustomerTable<TData, TValue>({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount()}
+          Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -213,7 +299,7 @@ export function CustomerTable<TData, TValue>({
             disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            Trước
           </Button>
           <Button
             variant="outline"
@@ -221,7 +307,7 @@ export function CustomerTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Sau
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

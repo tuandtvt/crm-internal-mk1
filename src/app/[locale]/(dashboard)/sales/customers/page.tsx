@@ -77,7 +77,9 @@ import { toast } from "sonner";
 import { Customer } from "@/types";
 import { mockCustomers } from "@/lib/mock-data/customers";
 import { mockUsers } from "@/lib/mock-data/users";
+import { LEAD_STATUSES, getStatusById } from "@/lib/mock-data/status";
 import { DataTableFacetedFilter } from "@/components/ui/data-table-faceted-filter";
+import { Tag } from "lucide-react";
 
 // Company options (should probably come from translations/DB too, but keeping ID based for now)
 const COMPANIES = [
@@ -469,6 +471,8 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   const industryParam = searchParams.get("industry")?.split(",").filter(Boolean) || [];
   const sourceParam = searchParams.get("source")?.split(",").filter(Boolean) || [];
   const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
+  const tagParam = searchParams.get("tag")?.split(",").filter(Boolean) || [];
+  const statusParam = searchParams.get("status_id")?.split(",").filter(Boolean) || [];
 
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -500,6 +504,19 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
     value: String(user.id),
   }));
 
+  // Get unique tags from all customers for filter
+  const uniqueTags = [...new Set(customers.flatMap(c => c.tags || []))].sort();
+  const tagOptions = uniqueTags.map(tag => ({
+    label: tag,
+    value: tag,
+  }));
+
+  // Status options from LEAD_STATUSES
+  const statusOptions = LEAD_STATUSES.map(status => ({
+    label: status.name,
+    value: String(status.id),
+  }));
+
   // Customer type styling
   const CUSTOMER_TYPES = {
     LEAD: { label: t("lead"), bgColor: "bg-blue-100", textColor: "text-blue-700" },
@@ -524,7 +541,9 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
     const matchesSource = sourceParam.length === 0 || (customer.source && sourceParam.includes(customer.source));
     const matchesIndustry = industryParam.length === 0 || (customer.industry && industryParam.includes(customer.industry));
     const matchesOwner = ownerParam.length === 0 || ownerParam.includes(String(customer.owner_id));
-    return matchesSearch && matchesSource && matchesIndustry && matchesOwner;
+    const matchesTags = tagParam.length === 0 || (customer.tags && tagParam.some(tag => customer.tags?.includes(tag)));
+    const matchesStatus = statusParam.length === 0 || statusParam.includes(String(customer.status_id));
+    return matchesSearch && matchesSource && matchesIndustry && matchesOwner && matchesTags && matchesStatus;
   });
 
   const handleAddNew = () => {
