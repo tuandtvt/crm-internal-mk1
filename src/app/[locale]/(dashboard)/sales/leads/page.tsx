@@ -6,17 +6,9 @@ import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTranslations } from "next-intl";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -43,8 +35,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Search,
-  Filter,
   Users,
   UserPlus,
   Phone,
@@ -53,10 +43,8 @@ import {
   Edit,
   Trash2,
   ArrowRightLeft,
-  X,
-  TrendingUp,
-  Target,
-  Clock,
+  Star,
+  CheckCircle,
   Download,
   Upload,
 } from "lucide-react";
@@ -64,9 +52,9 @@ import { toast } from "sonner";
 import { mockCustomers } from "@/lib/mock-data/customers";
 import { mockUsers } from "@/lib/mock-data/users";
 import { Customer } from "@/types";
-import { DateRangeFilter } from "@/components/common/date-range-filter";
 import { ImportLeadsDialog } from "@/components/leads/import-leads-dialog";
-import { DataTableFacetedFilter } from "@/components/ui/data-table-faceted-filter";
+import { DataTableCellStatus, StatusOption } from "@/components/ui/data-table-cell-status";
+import { CompactFilterCard } from "@/components/dashboard/compact-filter-card";
 
 // Format date
 function formatDate(date: Date, locale: string) {
@@ -77,19 +65,25 @@ function formatDate(date: Date, locale: string) {
   });
 }
 
+// Status options for inline editor
+const LEAD_STATUS_OPTIONS: StatusOption[] = [
+  { value: 1, label: "Lead mới", bgColor: "bg-amber-100", textColor: "text-amber-700" },
+  { value: 2, label: "Đã liên hệ", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+  { value: 3, label: "Đủ điều kiện", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+];
+
 export default function LeadsPage({ params: { locale } }: { params: { locale: string } }) {
   const t = useTranslations("leads");
   const tc = useTranslations("common");
-  const ts = useTranslations("status");
   const tcu = useTranslations("customers");
 
   const allLeads = mockCustomers.filter((c) => c.type === "LEAD");
   const [leads, setLeads] = useState<Customer[]>(allLeads);
   const searchParams = useSearchParams();
   
-  // Read all filters from URL
+  // Read filters from URL
   const searchTerm = searchParams.get("q") || "";
-  const statusParam = searchParams.get("status")?.split(",").filter(Boolean) || [];
+  const statusParam = searchParams.get("status") || "";
   const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
   const fromDate = searchParams.get("from");
   const toDate = searchParams.get("to");
@@ -101,20 +95,40 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
   const [leadToDelete, setLeadToDelete] = useState<Customer | null>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
-  // Status options for FacetedFilter
-  const statusOptions = [
-    { label: ts("NEW"), value: "1" },
-    { label: ts("CONTACTED"), value: "2" },
-    { label: ts("QUALIFIED"), value: "3" },
-  ];
+  // Stats (always show total counts)
+  const stats = {
+    total: leads.length,
+    new: leads.filter((l) => l.status_id === 1).length,
+    contacted: leads.filter((l) => l.status_id === 2).length,
+    qualified: leads.filter((l) => l.status_id === 3).length,
+  };
 
-  // Owner options for FacetedFilter (searchable by name)
-  const ownerOptions = mockUsers.map(user => ({
-    label: user.name,
-    value: String(user.id),
-  }));
+  // Filter leads based on URL params
+  const filteredLeads = leads.filter((lead) => {
+    const matchesSearch =
+      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (lead.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    
+    // Status filter - match by status_id
+    const matchesStatus = !statusParam || String(lead.status_id) === statusParam;
+    
+    const matchesOwner = ownerParam.length === 0 || ownerParam.includes(String(lead.owner_id));
+    const matchesDate = !dateRange?.from || !dateRange?.to || !lead.created_at ||
+      (lead.created_at >= dateRange.from && lead.created_at <= dateRange.to);
+    return matchesSearch && matchesStatus && matchesOwner && matchesDate;
+  });
 
-  // Export CSV function
+  // Handle inline status change
+  const handleStatusChange = (rowId: string | number, newValue: string | number) => {
+    setLeads(prev => 
+      prev.map(lead => 
+        lead.id === rowId ? { ...lead, status_id: newValue as number } : lead
+      )
+    );
+  };
+
+  // Export CSV
   const handleExport = () => {
     const headers = ["Name", "Company", "Email", "Phone", "Source", "Status"];
     const csvData = leads.map(lead => [
@@ -138,41 +152,14 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
     link.click();
     URL.revokeObjectURL(link.href);
     
-    toast.success(tcu("exportSuccess") || "Leads exported successfully");
+    toast.success("Leads exported successfully");
   };
 
-  // Import handler - adds mock data to leads
+  // Import handler
   const handleImportComplete = (importedLeads: Customer[]) => {
     setLeads(prev => [...prev, ...importedLeads]);
     setIsImportOpen(false);
     toast.success(`${importedLeads.length} leads imported successfully`);
-  };
-
-  // Status configuration for leads
-  const LEAD_STATUSES = {
-    1: { label: ts("NEW"), bgColor: "bg-slate-100", textColor: "text-slate-700" },
-    2: { label: ts("CONTACTED"), bgColor: "bg-blue-100", textColor: "text-blue-700" },
-    3: { label: ts("QUALIFIED"), bgColor: "bg-indigo-100", textColor: "text-indigo-700" },
-  } as const;
-
-  const filteredLeads = leads.filter((lead) => {
-    const matchesSearch =
-      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesStatus = statusParam.length === 0 || statusParam.includes(String(lead.status_id));
-    const matchesOwner = ownerParam.length === 0 || ownerParam.includes(String(lead.owner_id));
-    const matchesDate = !dateRange?.from || !dateRange?.to || !lead.created_at ||
-      (lead.created_at >= dateRange.from && lead.created_at <= dateRange.to);
-    return matchesSearch && matchesStatus && matchesOwner && matchesDate;
-  });
-
-  // Stats
-  const stats = {
-    total: leads.length,
-    new: leads.filter((l) => l.status_id === 1).length,
-    contacted: leads.filter((l) => l.status_id === 2).length,
-    qualified: leads.filter((l) => l.status_id === 3).length,
   };
 
   const handleConvertToCustomer = (lead: Customer) => {
@@ -183,12 +170,12 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
   const handleDeleteConfirm = () => {
     if (!leadToDelete) return;
     setLeads(leads.filter((l) => l.id !== leadToDelete.id));
-    toast.success(`${leadToDelete.name} ${tcu("deleteDescription")}`);
+    toast.success(`${leadToDelete.name} deleted`);
     setLeadToDelete(null);
   };
 
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -198,85 +185,59 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
           <p className="text-slate-600 mt-1">{t("description")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExport}
-            className="cursor-pointer"
-          >
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            {tc("export") || "Export"}
+            {tc("export")}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setIsImportOpen(true)}
-            className="cursor-pointer"
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)}>
             <Upload className="mr-2 h-4 w-4" />
-            {tc("import") || "Import"}
+            {tc("import")}
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25 cursor-pointer">
+          <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25">
             <UserPlus className="mr-2 h-4 w-4" />
             {tcu("addNew")}
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-slate-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-slate-100">
-                <Users className="h-5 w-5 text-slate-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{tc("all")}</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-blue-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Clock className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("newLeads")}</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.new}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-indigo-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-indigo-100">
-                <TrendingUp className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("contacted")}</p>
-                <p className="text-2xl font-bold text-indigo-600">{stats.contacted}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-emerald-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-100">
-                <Target className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("qualified")}</p>
-                <p className="text-2xl font-bold text-emerald-600">{stats.qualified}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Compact Filter Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <CompactFilterCard
+          label={tc("all")}
+          value={stats.total}
+          icon={Users}
+          statusValue={null}
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label={t("newLeads")}
+          value={stats.new}
+          icon={Star}
+          statusValue="1"
+          iconBgColor="bg-amber-100"
+          iconTextColor="text-amber-600"
+          activeColor="amber"
+        />
+        <CompactFilterCard
+          label={t("contacted")}
+          value={stats.contacted}
+          icon={Phone}
+          statusValue="2"
+          iconBgColor="bg-blue-100"
+          iconTextColor="text-blue-600"
+          activeColor="blue"
+        />
+        <CompactFilterCard
+          label={t("qualified")}
+          value={stats.qualified}
+          icon={CheckCircle}
+          statusValue="3"
+          iconBgColor="bg-emerald-100"
+          iconTextColor="text-emerald-600"
+          activeColor="emerald"
+        />
       </div>
 
       {/* Leads Table */}
@@ -304,7 +265,6 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
                 <TableBody>
                   {filteredLeads.length > 0 ? (
                     filteredLeads.map((lead) => {
-                      const statusConfig = LEAD_STATUSES[lead.status_id as keyof typeof LEAD_STATUSES] || LEAD_STATUSES[1];
                       const owner = mockUsers.find((u) => u.id === lead.owner_id);
 
                       return (
@@ -319,7 +279,7 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
                               <div>
                                 <Link
                                   href={`/sales/customers/${lead.id}`}
-                                  className="font-medium text-slate-900 hover:text-indigo-600 hover:underline decoration-indigo-500 underline-offset-4 transition-colors"
+                                  className="font-medium text-slate-900 hover:text-indigo-600 hover:underline"
                                 >
                                   {lead.name}
                                 </Link>
@@ -352,14 +312,17 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
                                 </AvatarFallback>
                               </Avatar>
                               <span className="text-sm text-slate-600 hidden xl:inline">
-                                {owner?.name || tcu("unassigned")}
+                                {owner?.name || "-"}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} hover:${statusConfig.bgColor}`}>
-                              {statusConfig.label}
-                            </Badge>
+                            <DataTableCellStatus
+                              value={lead.status_id || 1}
+                              rowId={lead.id}
+                              options={LEAD_STATUS_OPTIONS}
+                              onChange={handleStatusChange}
+                            />
                           </TableCell>
                           <TableCell>
                             <span className="text-sm text-slate-600">
@@ -369,26 +332,26 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
                                   onClick={() => handleConvertToCustomer(lead)}
-                                  className="cursor-pointer text-emerald-600"
+                                  className="text-emerald-600"
                                 >
                                   <ArrowRightLeft className="h-4 w-4 mr-2" />
                                   {t("convertToCustomer")}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer">
+                                <DropdownMenuItem>
                                   <Edit className="h-4 w-4 mr-2" />
                                   {tc("edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => setLeadToDelete(lead)}
-                                  className="text-red-600 cursor-pointer"
+                                  className="text-red-600"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   {tc("delete")}
@@ -422,16 +385,12 @@ export default function LeadsPage({ params: { locale } }: { params: { locale: st
           <AlertDialogHeader>
             <AlertDialogTitle>{tcu("deleteCustomer")}?</AlertDialogTitle>
             <AlertDialogDescription>
-              {tcu("deleteConfirm")} <strong>{leadToDelete?.name}</strong>?{" "}
-              {tcu("deleteDescription")}
+              {tcu("deleteConfirm")} <strong>{leadToDelete?.name}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
               {tc("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>

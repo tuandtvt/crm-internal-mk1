@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslations } from "next-intl";
@@ -32,8 +30,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   Plus,
-  Search,
-  Filter,
   FileText,
   Calendar,
   DollarSign,
@@ -41,93 +37,42 @@ import {
   AlertCircle,
   Send,
   Loader2,
-  Building2,
-  X,
+  Users,
 } from "lucide-react";
-import { DateRangeFilter } from "@/components/common/date-range-filter";
+import { CompactFilterCard } from "@/components/dashboard/compact-filter-card";
+import { DataTableCellStatus, StatusOption } from "@/components/ui/data-table-cell-status";
+import { toast } from "sonner";
+
+// Contract type
+interface Contract {
+  id: string;
+  name: string;
+  customerId: string;
+  customerName: string;
+  value: number;
+  startDate: Date;
+  endDate: Date;
+  status: "DRAFT" | "SENT" | "SIGNED" | "EXPIRED";
+}
 
 // Mock contracts data
-const mockContracts = [
-  { 
-    id: "1", 
-    name: "Enterprise License Agreement - TechCorp", 
-    customerId: "1",
-    customerName: "TechCorp Inc.", 
-    value: 125000, 
-    startDate: new Date("2026-01-15"), 
-    endDate: new Date("2027-01-14"), 
-    status: "SIGNED" as const 
-  },
-  { 
-    id: "2", 
-    name: "Annual Support Contract - StartupXYZ", 
-    customerId: "2",
-    customerName: "StartupXYZ", 
-    value: 45000, 
-    startDate: new Date("2026-02-01"), 
-    endDate: new Date("2027-01-31"), 
-    status: "SENT" as const 
-  },
-  { 
-    id: "3", 
-    name: "Consulting Agreement - MegaCorp", 
-    customerId: "3",
-    customerName: "MegaCorp Ltd.", 
-    value: 250000, 
-    startDate: new Date("2026-03-01"), 
-    endDate: new Date("2026-08-31"), 
-    status: "DRAFT" as const 
-  },
-  { 
-    id: "4", 
-    name: "Platform License - FinanceHub", 
-    customerId: "4",
-    customerName: "FinanceHub", 
-    value: 85000, 
-    startDate: new Date("2025-01-01"), 
-    endDate: new Date("2025-12-31"), 
-    status: "EXPIRED" as const 
-  },
-  { 
-    id: "5", 
-    name: "Extended Support - RetailMax", 
-    customerId: "5",
-    customerName: "RetailMax", 
-    value: 32000, 
-    startDate: new Date("2026-01-10"), 
-    endDate: new Date("2026-07-09"), 
-    status: "SIGNED" as const 
-  },
-  { 
-    id: "6", 
-    name: "Custom Development - HealthCare+", 
-    customerId: "6",
-    customerName: "HealthCare+", 
-    value: 175000, 
-    startDate: new Date("2026-02-15"), 
-    endDate: new Date("2026-11-14"), 
-    status: "DRAFT" as const 
-  },
-  { 
-    id: "7", 
-    name: "Integration Services - LogiTech", 
-    customerId: "7",
-    customerName: "LogiTech Solutions", 
-    value: 68000, 
-    startDate: new Date("2024-06-01"), 
-    endDate: new Date("2025-05-31"), 
-    status: "EXPIRED" as const 
-  },
-  { 
-    id: "8", 
-    name: "Pilot Program - EduLearn", 
-    customerId: "8",
-    customerName: "EduLearn Academy", 
-    value: 15000, 
-    startDate: new Date("2026-01-20"), 
-    endDate: new Date("2026-04-19"), 
-    status: "SENT" as const 
-  },
+const initialContracts: Contract[] = [
+  { id: "1", name: "Enterprise License Agreement - TechCorp", customerId: "1", customerName: "TechCorp Inc.", value: 125000, startDate: new Date("2026-01-15"), endDate: new Date("2027-01-14"), status: "SIGNED" },
+  { id: "2", name: "Annual Support Contract - StartupXYZ", customerId: "2", customerName: "StartupXYZ", value: 45000, startDate: new Date("2026-02-01"), endDate: new Date("2027-01-31"), status: "SENT" },
+  { id: "3", name: "Consulting Agreement - MegaCorp", customerId: "3", customerName: "MegaCorp Ltd.", value: 250000, startDate: new Date("2026-03-01"), endDate: new Date("2026-08-31"), status: "DRAFT" },
+  { id: "4", name: "Platform License - FinanceHub", customerId: "4", customerName: "FinanceHub", value: 85000, startDate: new Date("2025-01-01"), endDate: new Date("2025-12-31"), status: "EXPIRED" },
+  { id: "5", name: "Extended Support - RetailMax", customerId: "5", customerName: "RetailMax", value: 32000, startDate: new Date("2026-01-10"), endDate: new Date("2026-07-09"), status: "SIGNED" },
+  { id: "6", name: "Custom Development - HealthCare+", customerId: "6", customerName: "HealthCare+", value: 175000, startDate: new Date("2026-02-15"), endDate: new Date("2026-11-14"), status: "DRAFT" },
+  { id: "7", name: "Integration Services - LogiTech", customerId: "7", customerName: "LogiTech Solutions", value: 68000, startDate: new Date("2024-06-01"), endDate: new Date("2025-05-31"), status: "EXPIRED" },
+  { id: "8", name: "Pilot Program - EduLearn", customerId: "8", customerName: "EduLearn Academy", value: 15000, startDate: new Date("2026-01-20"), endDate: new Date("2026-04-19"), status: "SENT" },
+];
+
+// Status options for inline editor
+const CONTRACT_STATUS_OPTIONS: StatusOption[] = [
+  { value: "DRAFT", label: "Nháp", bgColor: "bg-slate-100", textColor: "text-slate-700" },
+  { value: "SENT", label: "Đã gửi", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+  { value: "SIGNED", label: "Đã ký", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+  { value: "EXPIRED", label: "Hết hạn", bgColor: "bg-rose-100", textColor: "text-rose-700" },
 ];
 
 // Format currency
@@ -335,36 +280,42 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
   
   // Read filters from URL
   const searchTerm = searchParams.get("q") || "";
-  const fromDate = searchParams.get("from");
-  const toDate = searchParams.get("to");
-  const dateRange = fromDate && toDate ? {
-    from: new Date(fromDate),
-    to: new Date(toDate),
-  } : undefined;
+  const statusParam = searchParams.get("status") || "";
 
+  const [contracts, setContracts] = useState<Contract[]>(initialContracts);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const CONTRACT_STATUS = {
-    DRAFT: { label: ts("DRAFT"), bgColor: "bg-slate-100", textColor: "text-slate-700", icon: FileText },
-    SENT: { label: ts("SENT"), bgColor: "bg-blue-100", textColor: "text-blue-700", icon: Send },
-    SIGNED: { label: ts("SIGNED"), bgColor: "bg-emerald-100", textColor: "text-emerald-700", icon: Check },
-    EXPIRED: { label: ts("EXPIRED"), bgColor: "bg-rose-100", textColor: "text-rose-700", icon: AlertCircle },
-  } as const;
+  // Stats
+  const stats = {
+    total: contracts.length,
+    draft: contracts.filter((c) => c.status === "DRAFT").length,
+    sent: contracts.filter((c) => c.status === "SENT").length,
+    signed: contracts.filter((c) => c.status === "SIGNED").length,
+    expired: contracts.filter((c) => c.status === "EXPIRED").length,
+  };
 
-  const filteredContracts = mockContracts.filter((contract) => {
+  // Filter contracts
+  const filteredContracts = contracts.filter((contract) => {
     const matchesSearch = 
       contract.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contract.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDate = !dateRange?.from || !dateRange?.to || 
-      (contract.startDate >= dateRange.from && contract.startDate <= dateRange.to);
-    return matchesSearch && matchesDate;
+    const matchesStatus = !statusParam || contract.status === statusParam;
+    return matchesSearch && matchesStatus;
   });
 
-  const totalValue = mockContracts.reduce((sum, c) => sum + c.value, 0);
-  const signedValue = mockContracts.filter((c) => c.status === "SIGNED").reduce((sum, c) => sum + c.value, 0);
+  // Handle inline status change
+  const handleStatusChange = (rowId: string | number, newValue: string | number) => {
+    setContracts(prev => 
+      prev.map(contract => 
+        contract.id === rowId ? { ...contract, status: newValue as Contract["status"] } : contract
+      )
+    );
+  };
+
+  const signedValue = contracts.filter((c) => c.status === "SIGNED").reduce((sum, c) => sum + c.value, 0);
 
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
@@ -384,35 +335,53 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-indigo-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{t("title")}</p>
-            <p className="text-2xl font-bold text-slate-900">{mockContracts.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-emerald-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{ts("SIGNED")}</p>
-            <p className="text-2xl font-bold text-emerald-600">{formatCurrency(signedValue, locale)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-blue-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{ts("PENDING")}</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {mockContracts.filter((c) => c.status === "SENT" || c.status === "DRAFT").length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-rose-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{ts("EXPIRED")}</p>
-            <p className="text-2xl font-bold text-rose-600">
-              {mockContracts.filter((c) => c.status === "EXPIRED").length}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Compact Filter Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <CompactFilterCard
+          label={tc("all")}
+          value={stats.total}
+          icon={Users}
+          statusValue={null}
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label={ts("DRAFT")}
+          value={stats.draft}
+          icon={FileText}
+          statusValue="DRAFT"
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label={ts("SENT")}
+          value={stats.sent}
+          icon={Send}
+          statusValue="SENT"
+          iconBgColor="bg-blue-100"
+          iconTextColor="text-blue-600"
+          activeColor="blue"
+        />
+        <CompactFilterCard
+          label={ts("SIGNED")}
+          value={stats.signed}
+          icon={Check}
+          statusValue="SIGNED"
+          iconBgColor="bg-emerald-100"
+          iconTextColor="text-emerald-600"
+          activeColor="emerald"
+        />
+        <CompactFilterCard
+          label={ts("EXPIRED")}
+          value={stats.expired}
+          icon={AlertCircle}
+          statusValue="EXPIRED"
+          iconBgColor="bg-rose-100"
+          iconTextColor="text-rose-600"
+          activeColor="purple"
+        />
       </div>
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
@@ -436,51 +405,49 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredContracts.map((contract) => {
-                    const statusConfig = CONTRACT_STATUS[contract.status as keyof typeof CONTRACT_STATUS];
-                    const StatusIcon = statusConfig.icon;
-                    return (
-                      <TableRow key={contract.id} className="hover:bg-slate-50/50 cursor-pointer">
-                        <TableCell>
-                          <Link 
-                            href={`/sales/contracts/${contract.id}`}
-                            className="font-medium text-slate-900 hover:text-indigo-600 hover:underline decoration-indigo-500 underline-offset-4 transition-colors"
-                          >
-                            {contract.name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Link 
-                            href={`/sales/customers/${contract.customerId}`}
-                            className="text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
-                          >
-                            {contract.customerName}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-bold text-slate-900">
-                            {formatCurrency(contract.value, locale)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-slate-600">
-                            {formatDate(contract.startDate, locale)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-slate-600">
-                            {formatDate(contract.endDate, locale)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} hover:${statusConfig.bgColor} gap-1`}>
-                            <StatusIcon className="h-3 w-3" />
-                            {statusConfig.label}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {filteredContracts.map((contract) => (
+                    <TableRow key={contract.id} className="hover:bg-slate-50/50">
+                      <TableCell>
+                        <Link 
+                          href={`/sales/contracts/${contract.id}`}
+                          className="font-medium text-slate-900 hover:text-indigo-600 hover:underline"
+                        >
+                          {contract.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/sales/customers/${contract.customerId}`}
+                          className="text-sm text-indigo-600 hover:text-indigo-700"
+                        >
+                          {contract.customerName}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-bold text-slate-900">
+                          {formatCurrency(contract.value, locale)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-slate-600">
+                          {formatDate(contract.startDate, locale)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-slate-600">
+                          {formatDate(contract.endDate, locale)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <DataTableCellStatus
+                          value={contract.status}
+                          rowId={contract.id}
+                          options={CONTRACT_STATUS_OPTIONS}
+                          onChange={handleStatusChange}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

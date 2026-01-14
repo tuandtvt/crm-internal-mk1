@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,8 +32,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   Plus,
-  Search,
-  Filter,
   FileText,
   Calendar as CalendarIcon,
   DollarSign,
@@ -44,9 +40,13 @@ import {
   Users,
   Building2,
   Target,
-  X,
+  Trophy,
+  Clock,
+  Handshake,
+  XCircle,
 } from "lucide-react";
-import { DateRangeFilter } from "@/components/common/date-range-filter";
+import { CompactFilterCard } from "@/components/dashboard/compact-filter-card";
+import { DataTableCellStatus, StatusOption } from "@/components/ui/data-table-cell-status";
 
 // Mock owners
 const OWNERS = [
@@ -65,16 +65,40 @@ const CUSTOMERS = [
   { id: "6", name: "HealthCare+" },
 ];
 
+// Deal type
+interface Deal {
+  id: string;
+  name: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  stage: "NEW" | "CONTACTED" | "PROPOSAL" | "NEGOTIATION" | "WON" | "LOST";
+  closeDate: Date;
+  ownerId: string;
+  ownerName: string;
+  probability: number;
+}
+
 // Mock deals data
-const mockDeals = [
-  { id: "1", name: "Enterprise License 2026", customerId: "1", customerName: "TechCorp Inc.", amount: 125000, stage: "PROPOSAL" as const, closeDate: new Date("2026-02-15"), ownerId: "1", ownerName: "Jane Smith", probability: 60 },
-  { id: "2", name: "Support Contract Extension", customerId: "1", customerName: "TechCorp Inc.", amount: 45000, stage: "NEGOTIATION" as const, closeDate: new Date("2026-01-30"), ownerId: "1", ownerName: "Jane Smith", probability: 80 },
-  { id: "3", name: "Custom Integration Project", customerId: "3", customerName: "MegaCorp Ltd.", amount: 85000, stage: "NEW" as const, closeDate: new Date("2026-03-20"), ownerId: "2", ownerName: "John Doe", probability: 30 },
-  { id: "4", name: "Platform Migration", customerId: "4", customerName: "FinanceHub", amount: 250000, stage: "CONTACTED" as const, closeDate: new Date("2026-04-10"), ownerId: "2", ownerName: "John Doe", probability: 45 },
-  { id: "5", name: "Annual Subscription", customerId: "5", customerName: "RetailMax", amount: 32000, stage: "WON" as const, closeDate: new Date("2026-01-05"), ownerId: "3", ownerName: "Sarah Connor", probability: 100 },
-  { id: "6", name: "Consulting Package", customerId: "6", customerName: "HealthCare+", amount: 175000, stage: "PROPOSAL" as const, closeDate: new Date("2026-02-28"), ownerId: "3", ownerName: "Sarah Connor", probability: 55 },
-  { id: "7", name: "Training Workshop", customerId: "2", customerName: "StartupXYZ", amount: 15000, stage: "LOST" as const, closeDate: new Date("2025-12-20"), ownerId: "1", ownerName: "Jane Smith", probability: 0 },
-  { id: "8", name: "API Integration", customerId: "3", customerName: "MegaCorp Ltd.", amount: 68000, stage: "NEGOTIATION" as const, closeDate: new Date("2026-02-05"), ownerId: "2", ownerName: "John Doe", probability: 70 },
+const initialDeals: Deal[] = [
+  { id: "1", name: "Enterprise License 2026", customerId: "1", customerName: "TechCorp Inc.", amount: 125000, stage: "PROPOSAL", closeDate: new Date("2026-02-15"), ownerId: "1", ownerName: "Jane Smith", probability: 60 },
+  { id: "2", name: "Support Contract Extension", customerId: "1", customerName: "TechCorp Inc.", amount: 45000, stage: "NEGOTIATION", closeDate: new Date("2026-01-30"), ownerId: "1", ownerName: "Jane Smith", probability: 80 },
+  { id: "3", name: "Custom Integration Project", customerId: "3", customerName: "MegaCorp Ltd.", amount: 85000, stage: "NEW", closeDate: new Date("2026-03-20"), ownerId: "2", ownerName: "John Doe", probability: 30 },
+  { id: "4", name: "Platform Migration", customerId: "4", customerName: "FinanceHub", amount: 250000, stage: "CONTACTED", closeDate: new Date("2026-04-10"), ownerId: "2", ownerName: "John Doe", probability: 45 },
+  { id: "5", name: "Annual Subscription", customerId: "5", customerName: "RetailMax", amount: 32000, stage: "WON", closeDate: new Date("2026-01-05"), ownerId: "3", ownerName: "Sarah Connor", probability: 100 },
+  { id: "6", name: "Consulting Package", customerId: "6", customerName: "HealthCare+", amount: 175000, stage: "PROPOSAL", closeDate: new Date("2026-02-28"), ownerId: "3", ownerName: "Sarah Connor", probability: 55 },
+  { id: "7", name: "Training Workshop", customerId: "2", customerName: "StartupXYZ", amount: 15000, stage: "LOST", closeDate: new Date("2025-12-20"), ownerId: "1", ownerName: "Jane Smith", probability: 0 },
+  { id: "8", name: "API Integration", customerId: "3", customerName: "MegaCorp Ltd.", amount: 68000, stage: "NEGOTIATION", closeDate: new Date("2026-02-05"), ownerId: "2", ownerName: "John Doe", probability: 70 },
+];
+
+// Status options for inline editor
+const DEAL_STAGE_OPTIONS: StatusOption[] = [
+  { value: "NEW", label: "Mới", bgColor: "bg-slate-100", textColor: "text-slate-700" },
+  { value: "CONTACTED", label: "Đã liên hệ", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+  { value: "PROPOSAL", label: "Đã gửi đề xuất", bgColor: "bg-purple-100", textColor: "text-purple-700" },
+  { value: "NEGOTIATION", label: "Đang đàm phán", bgColor: "bg-amber-100", textColor: "text-amber-700" },
+  { value: "WON", label: "Thắng", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+  { value: "LOST", label: "Thua", bgColor: "bg-rose-100", textColor: "text-rose-700" },
 ];
 
 // Format currency
@@ -83,7 +107,7 @@ function formatCurrency(value: number, locale: string) {
     style: "currency",
     currency: locale === "vi" ? "VND" : "USD",
     minimumFractionDigits: 0,
-  }).format(locale === "vi" ? value * 25000 : value); // Simple mock conversion for VND
+  }).format(locale === "vi" ? value * 25000 : value);
 }
 
 // Format date
@@ -288,52 +312,33 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
   const t = useTranslations("deals");
   const tc = useTranslations("common");
   const ts = useTranslations("status");
-  const td = useTranslations("dashboard");
   const searchParams = useSearchParams();
   
   // Read filters from URL
   const searchTerm = searchParams.get("q") || "";
-  const stageParam = searchParams.get("stage")?.split(",").filter(Boolean) || [];
-  const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
-  const fromDate = searchParams.get("from");
-  const toDate = searchParams.get("to");
-  const dateRange: DateRange | undefined = fromDate && toDate ? {
-    from: new Date(fromDate),
-    to: new Date(toDate),
-  } : undefined;
+  const stageParam = searchParams.get("stage") || "";
 
+  const [deals, setDeals] = useState<Deal[]>(initialDeals);
   const [sortBy, setSortBy] = useState<"amount" | "closeDate">("closeDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Stage configuration (localized)
-  const STAGES = {
-    NEW: { label: ts("NEW"), bgColor: "bg-slate-100", textColor: "text-slate-700", order: 1 },
-    CONTACTED: { label: ts("CONTACTED"), bgColor: "bg-blue-100", textColor: "text-blue-700", order: 2 },
-    PROPOSAL: { label: ts("PROPOSAL"), bgColor: "bg-purple-100", textColor: "text-purple-700", order: 3 },
-    NEGOTIATION: { label: ts("NEGOTIATION"), bgColor: "bg-orange-100", textColor: "text-orange-700", order: 4 },
-    WON: { label: ts("WON"), bgColor: "bg-emerald-100", textColor: "text-emerald-700", order: 5 },
-    LOST: { label: ts("LOST"), bgColor: "bg-rose-100", textColor: "text-rose-700", order: 6 },
-  } as const;
-
-  // Map header stage values to deal stage values
-  const stageMapping: Record<string, string> = {
-    "discovery": "NEW",
-    "proposal": "PROPOSAL",
-    "negotiation": "NEGOTIATION",
-    "closed_won": "WON",
-    "closed_lost": "LOST",
+  // Stats
+  const stats = {
+    total: deals.length,
+    open: deals.filter((d) => d.stage !== "WON" && d.stage !== "LOST").length,
+    negotiation: deals.filter((d) => d.stage === "NEGOTIATION").length,
+    won: deals.filter((d) => d.stage === "WON").length,
+    lost: deals.filter((d) => d.stage === "LOST").length,
   };
 
-  const filteredDeals = mockDeals.filter((deal) => {
+  // Filter deals
+  const filteredDeals = deals.filter((deal) => {
     const matchesSearch = 
       deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStage = stageParam.length === 0 || stageParam.some(s => stageMapping[s] === deal.stage || s.toUpperCase() === deal.stage);
-    const matchesOwner = ownerParam.length === 0 || ownerParam.includes(deal.ownerId);
-    const matchesDate = !dateRange?.from || !dateRange?.to || 
-      (deal.closeDate >= dateRange.from && deal.closeDate <= dateRange.to);
-    return matchesSearch && matchesStage && matchesOwner && matchesDate;
+    const matchesStage = !stageParam || deal.stage === stageParam;
+    return matchesSearch && matchesStage;
   });
 
   const sortedDeals = [...filteredDeals].sort((a, b) => {
@@ -355,11 +360,19 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
     }
   };
 
-  const totalValue = mockDeals.reduce((sum, d) => sum + d.amount, 0);
-  const wonValue = mockDeals.filter((d) => d.stage === "WON").reduce((sum, d) => sum + d.amount, 0);
+  // Handle inline stage change
+  const handleStageChange = (rowId: string | number, newValue: string | number) => {
+    setDeals(prev => 
+      prev.map(deal => 
+        deal.id === rowId ? { ...deal, stage: newValue as Deal["stage"] } : deal
+      )
+    );
+  };
+
+  const wonValue = deals.filter((d) => d.stage === "WON").reduce((sum, d) => sum + d.amount, 0);
 
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
@@ -379,33 +392,58 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-indigo-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{td("stats.activeLeads")}</p>
-            <p className="text-2xl font-bold text-slate-900">{mockDeals.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-purple-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">Pipeline Value</p>
-            <p className="text-2xl font-bold text-purple-600">{formatCurrency(totalValue, locale)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-emerald-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">Won Value</p>
-            <p className="text-2xl font-bold text-emerald-600">{formatCurrency(wonValue, locale)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-blue-500">
-          <CardContent className="p-4">
-            <p className="text-xs text-slate-500">{td("stats.openDeals")}</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {mockDeals.filter((d) => d.stage !== "WON" && d.stage !== "LOST").length}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Compact Filter Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <CompactFilterCard
+          label={tc("all")}
+          value={stats.total}
+          icon={Users}
+          statusValue={null}
+          paramName="stage"
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label="Đang mở"
+          value={stats.open}
+          icon={Clock}
+          statusValue="NEW"
+          paramName="stage"
+          iconBgColor="bg-blue-100"
+          iconTextColor="text-blue-600"
+          activeColor="blue"
+        />
+        <CompactFilterCard
+          label={ts("NEGOTIATION")}
+          value={stats.negotiation}
+          icon={Handshake}
+          statusValue="NEGOTIATION"
+          paramName="stage"
+          iconBgColor="bg-amber-100"
+          iconTextColor="text-amber-600"
+          activeColor="amber"
+        />
+        <CompactFilterCard
+          label={ts("WON")}
+          value={stats.won}
+          icon={Trophy}
+          statusValue="WON"
+          paramName="stage"
+          iconBgColor="bg-emerald-100"
+          iconTextColor="text-emerald-600"
+          activeColor="emerald"
+        />
+        <CompactFilterCard
+          label={ts("LOST")}
+          value={stats.lost}
+          icon={XCircle}
+          statusValue="LOST"
+          paramName="stage"
+          iconBgColor="bg-rose-100"
+          iconTextColor="text-rose-600"
+          activeColor="purple"
+        />
       </div>
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
@@ -446,17 +484,16 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
                 </TableHeader>
                 <TableBody>
                   {sortedDeals.map((deal) => {
-                    const stageConfig = STAGES[deal.stage as keyof typeof STAGES];
                     const overdue = isOverdue(deal.closeDate, deal.stage);
                     return (
-                      <TableRow key={deal.id} className="hover:bg-slate-50/50 cursor-pointer">
+                      <TableRow key={deal.id} className="hover:bg-slate-50/50">
                         <TableCell>
                           <p className="font-medium text-slate-900">{deal.name}</p>
                         </TableCell>
                         <TableCell>
                           <Link 
                             href={`/sales/customers/${deal.customerId}`}
-                            className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
+                            className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700"
                           >
                             <Building2 className="h-3.5 w-3.5" />
                             {deal.customerName}
@@ -468,9 +505,12 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`${stageConfig.bgColor} ${stageConfig.textColor} hover:${stageConfig.bgColor}`}>
-                            {stageConfig.label}
-                          </Badge>
+                          <DataTableCellStatus
+                            value={deal.stage}
+                            rowId={deal.id}
+                            options={DEAL_STAGE_OPTIONS}
+                            onChange={handleStageChange}
+                          />
                         </TableCell>
                         <TableCell>
                           <span className={`text-sm ${overdue ? "text-rose-600 font-medium" : "text-slate-600"}`}>

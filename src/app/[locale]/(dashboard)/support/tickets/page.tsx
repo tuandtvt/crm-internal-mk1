@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,22 +34,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
-  mockTickets,
+  mockTickets as initialTickets,
   mockTicketAuditLogs,
-  getTicketStatusColor,
-  getTicketPriorityColor,
   getSLATimeRemaining,
   Ticket,
   TicketAuditLog,
 } from "@/lib/mock-data/support";
 import {
-  Search,
   Clock,
   User,
   Plus,
   ChevronLeft,
   ChevronRight,
-  Filter,
   Ticket as TicketIcon,
   AlertCircle,
   CheckCircle2,
@@ -60,14 +55,32 @@ import {
   ArrowRight,
   FileText,
   Tag,
-  X,
   Edit2,
   Save,
+  Users,
 } from "lucide-react";
-import { DateRangeFilter } from "@/components/common/date-range-filter";
+import { CompactFilterCard } from "@/components/dashboard/compact-filter-card";
+import { DataTableCellStatus, StatusOption } from "@/components/ui/data-table-cell-status";
 
 // Constants
 const PAGE_SIZE = 10;
+
+// Status options for inline editor
+const TICKET_STATUS_OPTIONS: StatusOption[] = [
+  { value: "new", label: "Mới", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+  { value: "open", label: "Đang mở", bgColor: "bg-amber-100", textColor: "text-amber-700" },
+  { value: "pending", label: "Chờ xử lý", bgColor: "bg-purple-100", textColor: "text-purple-700" },
+  { value: "resolved", label: "Đã giải quyết", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+  { value: "closed", label: "Đóng", bgColor: "bg-slate-100", textColor: "text-slate-700" },
+];
+
+// Priority options for inline editor
+const TICKET_PRIORITY_OPTIONS: StatusOption[] = [
+  { value: "low", label: "Thấp", bgColor: "bg-slate-100", textColor: "text-slate-700" },
+  { value: "medium", label: "Trung bình", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+  { value: "high", label: "Cao", bgColor: "bg-amber-100", textColor: "text-amber-700" },
+  { value: "urgent", label: "Khẩn cấp", bgColor: "bg-rose-100", textColor: "text-rose-700" },
+];
 
 // Audit log action descriptions
 function getAuditLogDescription(log: TicketAuditLog, t: (key: string) => string): string {
@@ -112,10 +125,11 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
   
   // Read filters from URL
   const searchQuery = searchParams.get("q") || "";
-  const statusParam = searchParams.get("status")?.split(",").filter(Boolean) || [];
-  const priorityParam = searchParams.get("priority")?.split(",").filter(Boolean) || [];
+  const statusParam = searchParams.get("status") || "";
+  const priorityParam = searchParams.get("priority") || "";
 
-  // State for non-URL filters and other state
+  // State
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -139,13 +153,22 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
     customerEmail: "",
   });
 
+  // Stats (based on current state)
+  const stats = {
+    total: tickets.length,
+    newCount: tickets.filter((t) => t.status === "new").length,
+    open: tickets.filter((t) => t.status === "open").length,
+    pending: tickets.filter((t) => t.status === "pending").length,
+    resolved: tickets.filter((t) => t.status === "resolved").length,
+  };
+
   // Filter tickets
-  const filteredTickets = mockTickets.filter((ticket) => {
+  const filteredTickets = tickets.filter((ticket) => {
     const matchesSearch =
       ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.customerName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusParam.length === 0 || statusParam.includes(ticket.status);
-    const matchesPriority = priorityParam.length === 0 || priorityParam.includes(ticket.priority);
+    const matchesStatus = !statusParam || ticket.status === statusParam;
+    const matchesPriority = !priorityParam || ticket.priority === priorityParam;
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
@@ -156,13 +179,22 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
     (currentPage + 1) * PAGE_SIZE
   );
 
-  // Stats
-  const stats = {
-    total: mockTickets.length,
-    open: mockTickets.filter((t) => t.status === "open").length,
-    pending: mockTickets.filter((t) => t.status === "pending").length,
-    resolved: mockTickets.filter((t) => t.status === "resolved").length,
-    newCount: mockTickets.filter((t) => t.status === "new").length,
+  // Handle inline status change
+  const handleStatusChange = (rowId: string | number, newValue: string | number) => {
+    setTickets(prev => 
+      prev.map(ticket => 
+        ticket.id === rowId ? { ...ticket, status: newValue as Ticket["status"] } : ticket
+      )
+    );
+  };
+
+  // Handle inline priority change
+  const handlePriorityChange = (rowId: string | number, newValue: string | number) => {
+    setTickets(prev => 
+      prev.map(ticket => 
+        ticket.id === rowId ? { ...ticket, priority: newValue as Ticket["priority"] } : ticket
+      )
+    );
   };
 
   // Handlers
@@ -196,7 +228,6 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
     if (!editingTicket || !selectedTicket) return;
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // In real app, would update the ticket
     setIsSubmitting(false);
     setIsEditMode(false);
     setEditingTicket(null);
@@ -220,16 +251,6 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
     });
   };
 
-  const getStatusTranslation = (status: string) => {
-    switch (status) {
-      case "new": return ts("NEW");
-      case "open": return ts("OPEN");
-      case "pending": return ts("PENDING");
-      case "resolved": return ts("RESOLVED");
-      case "closed": return ts("CLOSED");
-      default: return status;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -243,80 +264,60 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/25 cursor-pointer"
+          className="bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/25"
         >
           <Plus className="mr-2 h-4 w-4" />
           {t("newTicket")}
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-slate-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-slate-100">
-                <TicketIcon className="h-5 w-5 text-slate-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("stats.total")}</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-blue-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Plus className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("status.new")}</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.newCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-amber-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100">
-                <AlertCircle className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("status.open")}</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.open}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-purple-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100">
-                <Clock className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("status.pending")}</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.pending}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/60 shadow-sm border-t-4 border-t-emerald-500">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-100">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">{t("status.resolved")}</p>
-                <p className="text-2xl font-bold text-emerald-600">{stats.resolved}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Compact Filter Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <CompactFilterCard
+          label={tc("all")}
+          value={stats.total}
+          icon={Users}
+          statusValue={null}
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label={t("status.new")}
+          value={stats.newCount}
+          icon={Plus}
+          statusValue="new"
+          iconBgColor="bg-blue-100"
+          iconTextColor="text-blue-600"
+          activeColor="blue"
+        />
+        <CompactFilterCard
+          label={t("status.open")}
+          value={stats.open}
+          icon={AlertCircle}
+          statusValue="open"
+          iconBgColor="bg-amber-100"
+          iconTextColor="text-amber-600"
+          activeColor="amber"
+        />
+        <CompactFilterCard
+          label={t("status.pending")}
+          value={stats.pending}
+          icon={Clock}
+          statusValue="pending"
+          iconBgColor="bg-purple-100"
+          iconTextColor="text-purple-600"
+          activeColor="purple"
+        />
+        <CompactFilterCard
+          label={t("status.resolved")}
+          value={stats.resolved}
+          icon={CheckCircle2}
+          statusValue="resolved"
+          iconBgColor="bg-emerald-100"
+          iconTextColor="text-emerald-600"
+          activeColor="emerald"
+        />
       </div>
 
       {/* Tickets Table */}
@@ -347,18 +348,26 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                     paginatedTickets.map((ticket) => (
                       <TableRow
                         key={ticket.id}
-                        onClick={() => handleViewDetail(ticket)}
-                        className="hover:bg-slate-50/50 cursor-pointer"
+                        className="hover:bg-slate-50/50"
                       >
-                        <TableCell className="font-mono text-xs text-slate-500">
+                        <TableCell 
+                          className="font-mono text-xs text-slate-500 cursor-pointer"
+                          onClick={() => handleViewDetail(ticket)}
+                        >
                           #{ticket.id}
                         </TableCell>
-                        <TableCell>
-                          <p className="font-medium text-slate-900 line-clamp-1">
+                        <TableCell 
+                          className="cursor-pointer"
+                          onClick={() => handleViewDetail(ticket)}
+                        >
+                          <p className="font-medium text-slate-900 line-clamp-1 hover:text-indigo-600">
                             {ticket.title}
                           </p>
                         </TableCell>
-                        <TableCell>
+                        <TableCell 
+                          className="cursor-pointer"
+                          onClick={() => handleViewDetail(ticket)}
+                        >
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                               <AvatarFallback className="bg-gradient-premium text-white text-xs">
@@ -369,14 +378,20 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getTicketStatusColor(ticket.status)}>
-                            {getStatusTranslation(ticket.status)}
-                          </Badge>
+                          <DataTableCellStatus
+                            value={ticket.status}
+                            rowId={ticket.id}
+                            options={TICKET_STATUS_OPTIONS}
+                            onChange={handleStatusChange}
+                          />
                         </TableCell>
                         <TableCell>
-                          <Badge className={getTicketPriorityColor(ticket.priority)}>
-                            {ts(ticket.priority.toUpperCase())}
-                          </Badge>
+                          <DataTableCellStatus
+                            value={ticket.priority}
+                            rowId={ticket.id}
+                            options={TICKET_PRIORITY_OPTIONS}
+                            onChange={handlePriorityChange}
+                          />
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="capitalize text-xs">
@@ -433,7 +448,6 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                   size="sm"
                   onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                   disabled={currentPage === 0}
-                  className="cursor-pointer"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   {tc("previous")}
@@ -443,7 +457,6 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                   size="sm"
                   onClick={() => setCurrentPage((p) => Math.min(pageCount - 1, p + 1))}
                   disabled={currentPage >= pageCount - 1}
-                  className="cursor-pointer"
                 >
                   {tc("next")}
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -499,9 +512,15 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge className={getTicketStatusColor(selectedTicket.status)}>
-                          {getStatusTranslation(selectedTicket.status)}
-                        </Badge>
+                        <DataTableCellStatus
+                          value={selectedTicket.status}
+                          rowId={selectedTicket.id}
+                          options={TICKET_STATUS_OPTIONS}
+                          onChange={(id, val) => {
+                            handleStatusChange(id, val);
+                            setSelectedTicket(prev => prev ? {...prev, status: val as Ticket["status"]} : null);
+                          }}
+                        />
                       )}
                     </div>
                     <div>
@@ -522,9 +541,15 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge className={getTicketPriorityColor(selectedTicket.priority)}>
-                          {ts(selectedTicket.priority.toUpperCase())}
-                        </Badge>
+                        <DataTableCellStatus
+                          value={selectedTicket.priority}
+                          rowId={selectedTicket.id}
+                          options={TICKET_PRIORITY_OPTIONS}
+                          onChange={(id, val) => {
+                            handlePriorityChange(id, val);
+                            setSelectedTicket(prev => prev ? {...prev, priority: val as Ticket["priority"]} : null);
+                          }}
+                        />
                       )}
                     </div>
                     <div>
@@ -690,13 +715,13 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
               <div className="px-6 py-4 border-t bg-slate-50 flex items-center justify-end gap-3">
                 {isEditMode ? (
                   <>
-                    <Button variant="outline" onClick={handleCancelEdit} disabled={isSubmitting} className="cursor-pointer">
+                    <Button variant="outline" onClick={handleCancelEdit} disabled={isSubmitting}>
                       {tc("cancel")}
                     </Button>
                     <Button 
                       onClick={handleSaveEdit} 
                       disabled={isSubmitting}
-                      className="bg-violet-600 hover:bg-violet-700 cursor-pointer min-w-[100px]"
+                      className="bg-violet-600 hover:bg-violet-700 min-w-[100px]"
                     >
                       {isSubmitting ? (
                         <>
@@ -713,10 +738,10 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={() => setDetailOpen(false)} className="cursor-pointer">
+                    <Button variant="outline" onClick={() => setDetailOpen(false)}>
                       {tc("close")}
                     </Button>
-                    <Button onClick={handleStartEdit} className="bg-violet-600 hover:bg-violet-700 cursor-pointer">
+                    <Button onClick={handleStartEdit} className="bg-violet-600 hover:bg-violet-700">
                       <Edit2 className="h-4 w-4 mr-2" />
                       {tc("edit")}
                     </Button>
@@ -803,12 +828,12 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="customerEmail">
-                      Email <span className="text-red-500">*</span>
+                      {t("customerEmail")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="customerEmail"
                       type="email"
-                      placeholder="email@example.com"
+                      placeholder={t("customerEmailPlaceholder")}
                       value={newTicket.customerEmail}
                       onChange={(e) => setNewTicket({ ...newTicket, customerEmail: e.target.value })}
                     />
@@ -816,20 +841,20 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                 </div>
               </div>
 
-              {/* Priority & Category */}
+              {/* Classification */}
               <div>
                 <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-slate-500" />
-                  {t("details.priority")} & {t("details.category")}
+                  <Tag className="h-4 w-4 text-slate-500" />
+                  {t("classification")}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">{t("details.priority")}</Label>
                     <Select
                       value={newTicket.priority}
-                      onValueChange={(value) => setNewTicket({ ...newTicket, priority: value as Ticket["priority"] })}
+                      onValueChange={(v) => setNewTicket({ ...newTicket, priority: v as Ticket["priority"] })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="priority">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -844,9 +869,9 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
                     <Label htmlFor="category">{t("details.category")}</Label>
                     <Select
                       value={newTicket.category}
-                      onValueChange={(value) => setNewTicket({ ...newTicket, category: value as Ticket["category"] })}
+                      onValueChange={(v) => setNewTicket({ ...newTicket, category: v as Ticket["category"] })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="category">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -865,18 +890,13 @@ export default function TicketsPage({ params: { locale } }: { params: { locale: 
 
           {/* Footer */}
           <div className="px-6 py-4 border-t bg-slate-50 flex items-center justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setCreateOpen(false)}
-              disabled={isSubmitting}
-              className="cursor-pointer"
-            >
+            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isSubmitting}>
               {tc("cancel")}
             </Button>
             <Button
               onClick={handleCreateTicket}
               disabled={isSubmitting || !newTicket.title || !newTicket.description || !newTicket.customerName || !newTicket.customerEmail}
-              className="bg-violet-600 hover:bg-violet-700 min-w-[120px] cursor-pointer"
+              className="bg-violet-600 hover:bg-violet-700 min-w-[120px]"
             >
               {isSubmitting ? (
                 <>

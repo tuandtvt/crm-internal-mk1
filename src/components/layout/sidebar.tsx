@@ -7,7 +7,6 @@ import { useSidebar } from "@/hooks/use-sidebar";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -153,9 +152,9 @@ export function Sidebar() {
           isCollapsed ? "w-[80px]" : "w-[260px]"
         )}
       >
-        <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50 overflow-hidden">
+        <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-6">
+          <div className="flex-shrink-0 flex h-16 items-center justify-between border-b border-zinc-100 px-6">
             {!isCollapsed && (
               <Link href="/" className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
@@ -166,8 +165,8 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-4">
+          {/* Navigation - Scrollable */}
+          <div className="flex-1 overflow-y-auto px-3 py-4">
             {filteredSections.map((section, idx) => (
               <div key={section.titleKey} className="mb-8">
                 {!isCollapsed && (
@@ -233,7 +232,7 @@ export function Sidebar() {
                 </nav>
               </div>
             ))}
-          </ScrollArea>
+          </div>
         </div>
 
         {/* Floating Toggle Button */}

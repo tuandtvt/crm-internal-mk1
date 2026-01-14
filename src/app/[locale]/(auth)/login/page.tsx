@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, Loader2, Chrome, Github, ShieldAlert, UserCog, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Chrome, Github, ShieldAlert, UserCog, User, ArrowLeft, Mail } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
 const loginSchema = z.object({
@@ -33,8 +33,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations("auth.login");
+  const tForgot = useTranslations("auth.forgotPassword");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,6 +58,16 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
+    
+    if (isForgotPassword) {
+      console.log("Reset password for:", data.email);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsLoading(false);
+      setIsSubmitted(true);
+      return;
+    }
+
     console.log("Login data:", data);
 
     // Simulate API call
@@ -170,31 +183,56 @@ export default function LoginPage() {
           {/* Form Header */}
           <div className="mb-8 text-center lg:text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">
-              {t("title")}
+              {isForgotPassword ? (isSubmitted ? tForgot("successTitle") : tForgot("title")) : t("title")}
             </h2>
             <p className="text-slate-600 mt-2">
-              {t("description")}
+              {isForgotPassword ? (isSubmitted ? tForgot("successDescription") : tForgot("description")) : t("description")}
             </p>
           </div>
 
-          {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <Button variant="outline" className="h-11" type="button">
-              <Chrome className="h-5 w-5 mr-2" />
-              Google
-            </Button>
-            <Button variant="outline" className="h-11" type="button">
-              <Github className="h-5 w-5 mr-2" />
-              GitHub
-            </Button>
-          </div>
+          {isForgotPassword && isSubmitted ? (
+            <div className="space-y-6">
+              <div className="flex justify-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50">
+                  <Mail className="h-8 w-8 text-indigo-600" />
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full h-11"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setIsSubmitted(false);
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {tForgot("backToLogin")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Social Login Buttons */}
+              {!isForgotPassword && (
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <Button variant="outline" className="h-11" type="button">
+                      <Chrome className="h-5 w-5 mr-2" />
+                      Google
+                    </Button>
+                    <Button variant="outline" className="h-11" type="button">
+                      <Github className="h-5 w-5 mr-2" />
+                      GitHub
+                    </Button>
+                  </div>
 
-          <div className="relative mb-6">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-slate-500">
-              {t("orContinue")}
-            </span>
-          </div>
+                  <div className="relative mb-6">
+                    <Separator />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-slate-500">
+                      {t("orContinue")}
+                    </span>
+                  </div>
+                </>
+              )}
 
           {/* Login Form */}
           <Form {...form}>
@@ -219,64 +257,69 @@ export default function LoginPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel className="text-slate-700">{t("passwordLabel")}</FormLabel>
-                      <Link
-                        href="/forgot-password"
-                        className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                      >
-                        {t("forgotPassword")}
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder={t("passwordPlaceholder")}
-                          className="h-11 pr-10"
-                          autoComplete="current-password"
-                          {...field}
-                        />
+              {!isForgotPassword && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-slate-700">{t("passwordLabel")}</FormLabel>
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                          onClick={() => setShowPassword(!showPassword)}
+                          onClick={() => setIsForgotPassword(true)}
+                          className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                         >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
+                          {t("forgotPassword")}
                         </button>
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder={t("passwordPlaceholder")}
+                            className="h-11 pr-10"
+                            autoComplete="current-password"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm font-normal text-slate-600 cursor-pointer">
-                      {t("rememberMe")}
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
+              {!isForgotPassword && (
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal text-slate-600 cursor-pointer">
+                        {t("rememberMe")}
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <Button
                 type="submit"
@@ -284,75 +327,99 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? t("signingIn") : t("submit")}
+                {isLoading 
+                  ? (isForgotPassword ? tForgot("sending") : t("signingIn")) 
+                  : (isForgotPassword ? tForgot("submit") : t("submit"))}
               </Button>
+
+              {isForgotPassword && (
+                <Button
+                  variant="ghost"
+                  className="w-full h-11 text-slate-500 hover:text-slate-700 font-medium"
+                  onClick={() => setIsForgotPassword(false)}
+                  disabled={isLoading}
+                  type="button"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {tForgot("backToLogin")}
+                </Button>
+              )}
             </form>
           </Form>
 
           {/* Demo Access Panel */}
-          <div className="mt-10 p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
-                {t("demoTitle")}
-              </h3>
-            </div>
-            
-            <p className="text-xs text-slate-500 mb-4">
-              {t("demoDescription")}
-            </p>
+          {!isForgotPassword && (
+            <div className="mt-10 p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+                  {t("demoTitle")}
+                </h3>
+              </div>
+              
+              <p className="text-xs text-slate-500 mb-4">
+                {t("demoDescription")}
+              </p>
 
-            <div className="space-y-3">
-              <Button 
-                variant="destructive" 
-                className="w-full h-10 justify-start gap-3 bg-red-600 hover:bg-red-700"
-                onClick={() => handleDemoLogin("ADMIN")}
-                disabled={isLoading}
-              >
-                <ShieldAlert className="h-4 w-4" />
-                {t("loginAsAdmin")}
-              </Button>
-              
-              <Button 
-                variant="default" 
-                className="w-full h-10 justify-start gap-3 bg-indigo-600 hover:bg-indigo-700"
-                onClick={() => handleDemoLogin("MANAGER")}
-                disabled={isLoading}
-              >
-                <UserCog className="h-4 w-4" />
-                {t("loginAsManager")}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full h-10 justify-start gap-3 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 hover:border-emerald-300"
-                onClick={() => handleDemoLogin("SALE")}
-                disabled={isLoading}
-              >
-                <User className="h-4 w-4" />
-                {t("loginAsSale")}
-              </Button>
+              <div className="space-y-3">
+                <Button 
+                  variant="destructive" 
+                  className="w-full h-10 justify-start gap-3 bg-red-600 hover:bg-red-700"
+                  onClick={() => handleDemoLogin("ADMIN")}
+                  disabled={isLoading}
+                >
+                  <ShieldAlert className="h-4 w-4" />
+                  {t("loginAsAdmin")}
+                </Button>
+                
+                <Button 
+                  variant="default" 
+                  className="w-full h-10 justify-start gap-3 bg-indigo-600 hover:bg-indigo-700"
+                  onClick={() => handleDemoLogin("MANAGER")}
+                  disabled={isLoading}
+                >
+                  <UserCog className="h-4 w-4" />
+                  {t("loginAsManager")}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full h-10 justify-start gap-3 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 hover:border-emerald-300"
+                  onClick={() => handleDemoLogin("SALE")}
+                  disabled={isLoading}
+                >
+                  <User className="h-4 w-4" />
+                  {t("loginAsSale")}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
+
+            </>
+          )}
 
           {/* Footer */}
-          <p className="mt-8 text-center text-sm text-slate-600">
-            {t("noAccount")}{" "}
-            <Link
-              href="#"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              {t("contactAdmin")}
-            </Link>
-          </p>
+          {!isForgotPassword && (
+            <p className="mt-8 text-center text-sm text-slate-600">
+              {t("noAccount")}{" "}
+              <Link
+                href="#"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                {t("contactAdmin")}
+              </Link>
+            </p>
+          )}
 
           {/* Terms */}
-          <p className="mt-4 text-center text-xs text-slate-400">
-            {t.rich("terms", {
-              terms: (chunks) => <Link href="#" className="underline hover:text-slate-600">{t("termsLink")}</Link>,
-              privacy: (chunks) => <Link href="#" className="underline hover:text-slate-600">{t("privacyLink")}</Link>
-            })}
-          </p>
+          {!isForgotPassword && (
+            <p className="mt-4 text-center text-xs text-slate-400">
+              {t.rich("terms", {
+                terms: (chunks) => <Link href="#" className="underline hover:text-slate-600">{t("termsLink")}</Link>,
+                privacy: (chunks) => <Link href="#" className="underline hover:text-slate-600">{t("privacyLink")}</Link>
+              })}
+            </p>
+          )}
         </div>
       </div>
     </div>

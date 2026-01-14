@@ -50,8 +50,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plus,
-  Search,
-  Filter,
   Download,
   Upload,
   Globe,
@@ -69,17 +67,20 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  Lightbulb,
   Linkedin,
-  X,
+  Users,
+  Briefcase,
+  Trophy,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Customer } from "@/types";
 import { mockCustomers } from "@/lib/mock-data/customers";
 import { mockUsers } from "@/lib/mock-data/users";
-import { LEAD_STATUSES, getStatusById } from "@/lib/mock-data/status";
+import { LEAD_STATUSES } from "@/lib/mock-data/status";
 import { DataTableFacetedFilter } from "@/components/ui/data-table-faceted-filter";
-import { Tag } from "lucide-react";
+import { CompactFilterCard } from "@/components/dashboard/compact-filter-card";
+import { DataTableCellStatus, StatusOption } from "@/components/ui/data-table-cell-status";
 
 // Company options (should probably come from translations/DB too, but keeping ID based for now)
 const COMPANIES = [
@@ -466,27 +467,18 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   const tt = useTranslations("toast");
   const searchParams = useSearchParams();
   
-  // Read all filters from URL
+  // Read search query from URL
   const searchTerm = searchParams.get("q") || "";
-  const industryParam = searchParams.get("industry")?.split(",").filter(Boolean) || [];
-  const sourceParam = searchParams.get("source")?.split(",").filter(Boolean) || [];
-  const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
-  const tagParam = searchParams.get("tag")?.split(",").filter(Boolean) || [];
   const statusParam = searchParams.get("status_id")?.split(",").filter(Boolean) || [];
+  const sourceParam = searchParams.get("source")?.split(",").filter(Boolean) || [];
+  const industryParam = searchParams.get("industry")?.split(",").filter(Boolean) || [];
+  const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
+  const tagParam = searchParams.get("tags")?.split(",").filter(Boolean) || [];
 
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
-
-  // Industry options for FacetedFilter
-  const industryOptions = [
-    { label: "EdTech", value: "EdTech" },
-    { label: "HealthTech", value: "HealthTech" },
-    { label: "FinTech", value: "FinTech" },
-    { label: "E-commerce", value: "E-commerce" },
-    { label: "SaaS", value: "SaaS" },
-  ];
 
   // Source options for FacetedFilter
   const sourceOptions = [
@@ -520,7 +512,7 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   // Customer type styling
   const CUSTOMER_TYPES = {
     LEAD: { label: t("lead"), bgColor: "bg-blue-100", textColor: "text-blue-700" },
-    CUSTOMER: { label: t("customer"), bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+    CUSTOMER: { label: "Customer", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
   } as const;
 
   // Source display config (keep for table display)
@@ -545,6 +537,33 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
     const matchesStatus = statusParam.length === 0 || statusParam.includes(String(customer.status_id));
     return matchesSearch && matchesSource && matchesIndustry && matchesOwner && matchesTags && matchesStatus;
   });
+
+  // Stats for filter cards (using LEAD_STATUSES for customer pipeline)
+  const stats = {
+    total: customers.length,
+    consulting: customers.filter((c) => c.status_id === 2).length, // CONSULTING
+    negotiation: customers.filter((c) => c.status_id === 4).length, // NEGOTIATION
+    won: customers.filter((c) => c.status_id === 5).length, // CLOSED_WON
+  };
+
+  // Status options for inline editor
+  const CUSTOMER_STATUS_OPTIONS: StatusOption[] = [
+    { value: 1, label: "Lead mới", bgColor: "bg-blue-100", textColor: "text-blue-700" },
+    { value: 2, label: "Đang tư vấn", bgColor: "bg-indigo-100", textColor: "text-indigo-700" },
+    { value: 3, label: "Đã báo giá", bgColor: "bg-purple-100", textColor: "text-purple-700" },
+    { value: 4, label: "Đàm phán", bgColor: "bg-amber-100", textColor: "text-amber-700" },
+    { value: 5, label: "Chốt thành công", bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+    { value: 6, label: "Khách hàng cũ", bgColor: "bg-slate-100", textColor: "text-slate-700" },
+  ];
+
+  // Handle inline status change
+  const handleStatusChange = (rowId: string | number, newValue: string | number) => {
+    setCustomers(prev => 
+      prev.map(customer => 
+        customer.id === rowId ? { ...customer, status_id: newValue as number } : customer
+      )
+    );
+  };
 
   const handleAddNew = () => {
     setSelectedCustomer(null);
@@ -641,6 +660,50 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
         </div>
       </div>
 
+      {/* Compact Filter Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <CompactFilterCard
+          label={tc("all")}
+          value={stats.total}
+          icon={Users}
+          statusValue={null}
+          paramName="status_id"
+          iconBgColor="bg-slate-100"
+          iconTextColor="text-slate-600"
+          activeColor="slate"
+        />
+        <CompactFilterCard
+          label="Đang tư vấn"
+          value={stats.consulting}
+          icon={MessageSquare}
+          statusValue="2"
+          paramName="status_id"
+          iconBgColor="bg-indigo-100"
+          iconTextColor="text-indigo-600"
+          activeColor="indigo"
+        />
+        <CompactFilterCard
+          label="Đàm phán"
+          value={stats.negotiation}
+          icon={Briefcase}
+          statusValue="4"
+          paramName="status_id"
+          iconBgColor="bg-amber-100"
+          iconTextColor="text-amber-600"
+          activeColor="amber"
+        />
+        <CompactFilterCard
+          label="Chốt thành công"
+          value={stats.won}
+          icon={Trophy}
+          statusValue="5"
+          paramName="status_id"
+          iconBgColor="bg-emerald-100"
+          iconTextColor="text-emerald-600"
+          activeColor="emerald"
+        />
+      </div>
+
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
           <p className="text-sm text-slate-500">
@@ -703,9 +766,12 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`${typeConfig.bgColor} ${typeConfig.textColor} hover:${typeConfig.bgColor}`}>
-                            {typeConfig.label}
-                          </Badge>
+                          <DataTableCellStatus
+                            value={customer.status_id || 1}
+                            rowId={customer.id}
+                            options={CUSTOMER_STATUS_OPTIONS}
+                            onChange={handleStatusChange}
+                          />
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-slate-600">
