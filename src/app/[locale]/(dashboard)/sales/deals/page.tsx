@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +44,9 @@ import {
   Users,
   Building2,
   Target,
+  X,
 } from "lucide-react";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 
 // Mock owners
 const OWNERS = [
@@ -285,9 +289,19 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
   const tc = useTranslations("common");
   const ts = useTranslations("status");
   const td = useTranslations("dashboard");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [stageFilter, setStageFilter] = useState("all");
-  const [ownerFilter, setOwnerFilter] = useState("all");
+  const searchParams = useSearchParams();
+  
+  // Read filters from URL
+  const searchTerm = searchParams.get("q") || "";
+  const stageParam = searchParams.get("stage")?.split(",").filter(Boolean) || [];
+  const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
+  const fromDate = searchParams.get("from");
+  const toDate = searchParams.get("to");
+  const dateRange: DateRange | undefined = fromDate && toDate ? {
+    from: new Date(fromDate),
+    to: new Date(toDate),
+  } : undefined;
+
   const [sortBy, setSortBy] = useState<"amount" | "closeDate">("closeDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -302,13 +316,24 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
     LOST: { label: ts("LOST"), bgColor: "bg-rose-100", textColor: "text-rose-700", order: 6 },
   } as const;
 
+  // Map header stage values to deal stage values
+  const stageMapping: Record<string, string> = {
+    "discovery": "NEW",
+    "proposal": "PROPOSAL",
+    "negotiation": "NEGOTIATION",
+    "closed_won": "WON",
+    "closed_lost": "LOST",
+  };
+
   const filteredDeals = mockDeals.filter((deal) => {
     const matchesSearch = 
       deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStage = stageFilter === "all" || deal.stage === stageFilter;
-    const matchesOwner = ownerFilter === "all" || deal.ownerId === ownerFilter;
-    return matchesSearch && matchesStage && matchesOwner;
+    const matchesStage = stageParam.length === 0 || stageParam.some(s => stageMapping[s] === deal.stage || s.toUpperCase() === deal.stage);
+    const matchesOwner = ownerParam.length === 0 || ownerParam.includes(deal.ownerId);
+    const matchesDate = !dateRange?.from || !dateRange?.to || 
+      (deal.closeDate >= dateRange.from && deal.closeDate <= dateRange.to);
+    return matchesSearch && matchesStage && matchesOwner && matchesDate;
   });
 
   const sortedDeals = [...filteredDeals].sort((a, b) => {
@@ -385,46 +410,9 @@ export default function DealsPage({ params: { locale } }: { params: { locale: st
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
-            <div className="flex flex-1 gap-3 items-center flex-wrap w-full lg:w-auto">
-              <div className="relative flex-1 min-w-[200px] lg:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder={tc("search")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className="w-[130px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={t("stage")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tc("all")}</SelectItem>
-                  {Object.entries(STAGES).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-                <SelectTrigger className="w-[130px]">
-                  <Users className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={tc("all")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tc("all")}</SelectItem>
-                  {OWNERS.map((owner) => (
-                    <SelectItem key={owner.id} value={owner.id}>{owner.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-slate-500">
-              {filteredDeals.length} {t("title").toLowerCase()}
-            </p>
-          </div>
+          <p className="text-sm text-slate-500">
+            {filteredDeals.length} {t("title").toLowerCase()}
+          </p>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="overflow-x-auto -mx-6">

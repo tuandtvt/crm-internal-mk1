@@ -35,14 +35,17 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [campaignData, setCampaignData] = useState({
     name: "",
+    type: "" as string,
     subject: "",
     content: "",
     audience: "",
+    budget: "",
+    targetUrl: "",
     scheduleType: "now",
     scheduleDate: "",
   });
 
-  const totalSteps = 3;
+  const totalSteps = campaignData.type === "email" ? 3 : 2;
 
   const handleNext = () => {
     if (step < totalSteps) setStep(step + 1);
@@ -57,9 +60,12 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
     setSelectedTemplate("");
     setCampaignData({
       name: "",
+      type: "" as string,
       subject: "",
       content: "",
       audience: "",
+      budget: "",
+      targetUrl: "",
       scheduleType: "now",
       scheduleDate: "",
     });
@@ -87,9 +93,9 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
         <div className="px-6 py-4 border-b bg-slate-50">
           <div className="flex items-center justify-between max-w-md mx-auto">
             {[
-              { num: 1, label: t("selectTemplate") },
-              { num: 2, label: t("editContent") },
-              { num: 3, label: t("audienceSchedule") }
+              { num: 1, label: t("selectType") },
+              { num: 2, label: campaignData.type === "email" ? t("selectTemplate") : t("campaignDetails") },
+              ...(campaignData.type === "email" ? [{ num: 3, label: t("audienceSchedule") }] : [])
             ].map((s, idx) => (
               <div key={s.num} className="flex items-center flex-1">
                 <div className="flex flex-col items-center">
@@ -110,7 +116,7 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
                     {s.label}
                   </span>
                 </div>
-                {idx < 2 && (
+                {idx < (campaignData.type === "email" ? 2 : 1) && (
                   <div
                     className={`flex-1 h-0.5 mx-3 transition-colors ${
                       s.num < step ? "bg-violet-500" : "bg-slate-300"
@@ -124,8 +130,42 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
 
         {/* Step Content */}
         <div className="p-6 space-y-6">
-          {/* Step 1: Select Template */}
+          {/* Step 1: Select Type */}
           {step === 1 && (
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">{t("selectChannel")}</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { id: "email", name: t("channels.email"), icon: "📧" },
+                  { id: "facebook", name: t("channels.facebook"), icon: "📱" },
+                  { id: "google", name: t("channels.google"), icon: "🔍" },
+                  { id: "tiktok", name: t("channels.tiktok"), icon: "🎵" },
+                  { id: "linkedin", name: t("channels.linkedin"), icon: "💼" },
+                  { id: "youtube", name: t("channels.youtube"), icon: "🎥" },
+                ].map((channel) => (
+                  <div
+                    key={channel.id}
+                    onClick={() => {
+                      setCampaignData({ ...campaignData, type: channel.id });
+                    }}
+                    className={`p-6 border-2 rounded-xl cursor-pointer transition-all hover:border-violet-300 hover:shadow-md ${
+                      campaignData.type === channel.id
+                        ? "border-violet-500 bg-violet-50 shadow-lg"
+                        : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <div className="text-4xl mb-3 flex justify-center">{channel.icon}</div>
+                    <h4 className="font-semibold text-center text-slate-900">{channel.name}</h4>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Template (Email) or Details (Social) */}
+          {step === 2 && campaignData.type === "email" && (
             <div className="space-y-4">
               <div className="text-center mb-6">
                 <h3 className="text-lg font-semibold text-slate-900">{t("selectTemplateDesc")}</h3>
@@ -146,62 +186,57 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
                     </div>
                     <h4 className="font-semibold text-sm mb-1 text-slate-900">{template.name}</h4>
                     <p className="text-xs text-slate-500 line-clamp-2 mb-2">{template.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                        {t("used")} {template.usageCount}x
-                      </span>
-                      {selectedTemplate === template.id && (
-                        <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
-                          <Check className="h-3 w-3" /> {tc("selected")}
-                        </span>
-                      )}
-                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Step 2: Edit Content */}
-          {step === 2 && (
+          {step === 2 && campaignData.type !== "email" && (
             <div className="space-y-4">
               <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">{t("editContentDesc")}</h3>
+                <h3 className="text-lg font-semibold text-slate-900">{t("campaignDetails")}</h3>
               </div>
               <div className="space-y-5 bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <div>
-                  <Label htmlFor="campaign-name" className="text-slate-700 font-medium">{t("campaignName")} <span className="text-red-500">*</span></Label>
+                  <Label className="text-slate-700 font-medium">{t("campaignName")} <span className="text-red-500">*</span></Label>
                   <Input
-                    id="campaign-name"
                     placeholder={t("campaignNamePlaceholder")}
                     value={campaignData.name}
                     onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })}
                     className="mt-1.5 bg-white"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="subject" className="text-slate-700 font-medium">{t("subject")}</Label>
-                  <Input
-                    id="subject"
-                    placeholder={t("subjectPlaceholder")}
-                    value={campaignData.subject}
-                    onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })}
-                    className="mt-1.5 bg-white"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-slate-700 font-medium">{t("budget")}</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 50"
+                      value={campaignData.budget}
+                      onChange={(e) => setCampaignData({ ...campaignData, budget: e.target.value })}
+                      className="mt-1.5 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-700 font-medium">{t("targetUrl")}</Label>
+                    <Input
+                      placeholder="https://..."
+                      value={campaignData.targetUrl}
+                      onChange={(e) => setCampaignData({ ...campaignData, targetUrl: e.target.value })}
+                      className="mt-1.5 bg-white"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <Label htmlFor="content" className="text-slate-700 font-medium">{t("contentPreview")}</Label>
+                  <Label className="text-slate-700 font-medium">{t("adContent")}</Label>
                   <Textarea
-                    id="content"
-                    rows={6}
-                    placeholder={t("contentPlaceholder")}
+                    rows={4}
+                    placeholder={t("adContentPlaceholder")}
                     value={campaignData.content}
                     onChange={(e) => setCampaignData({ ...campaignData, content: e.target.value })}
                     className="mt-1.5 bg-white resize-none"
                   />
-                  <p className="text-xs text-slate-500 mt-2 italic">
-                    💡 {t("richTextNote")}
-                  </p>
                 </div>
               </div>
             </div>
@@ -281,7 +316,7 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
           {step < totalSteps ? (
             <Button
               onClick={handleNext}
-              disabled={step === 1 && !selectedTemplate}
+              disabled={step === 1 && !campaignData.type}
               className="bg-gradient-premium cursor-pointer px-6 shadow-lg hover:shadow-xl transition-shadow"
             >
               {tc("next")}
@@ -291,7 +326,7 @@ export function CampaignWizard({ open, onOpenChange }: CampaignWizardProps) {
             <Button 
               onClick={handleSubmit} 
               className="bg-gradient-premium cursor-pointer px-6 shadow-lg hover:shadow-xl transition-shadow" 
-              disabled={!campaignData.name || !campaignData.audience}
+              disabled={!campaignData.name || (campaignData.type === 'email' && !campaignData.audience)}
             >
               <Check className="h-4 w-4 mr-2" />
               {t("createCampaign")}

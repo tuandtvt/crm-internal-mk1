@@ -3,19 +3,19 @@
 # ===================
 # Web (Frontend - Next.js)
 # ===================
-web/node_modules
-web/.pnp
-web/.pnp.*
-web/.yarn/*
-!web/.yarn/patches
-!web/.yarn/plugins
-!web/.yarn/releases
-!web/.yarn/versions
-web/.next/
-web/out/
-web/build
-web/coverage
-web/next-env.d.ts
+node_modules
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.next/
+out/
+build
+coverage
+next-env.d.ts
 
 # ===================
 # API (Backend - NestJS)

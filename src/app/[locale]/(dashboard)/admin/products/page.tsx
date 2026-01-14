@@ -1,300 +1,246 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTranslations } from "next-intl";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
-import {
-  Plus,
-  Search,
-  Package,
-  DollarSign,
-  Tag,
+import { Switch } from "@/components/ui/switch";
+import { 
+  Plus, 
+  Search, 
+  Edit2, 
+  Trash2, 
+  Package, 
+  Settings2,
+  MoreVertical,
   Layers,
-  Image as ImageIcon,
-  Loader2,
-  Edit,
-  Trash2,
+  Box
 } from "lucide-react";
+import { mockProducts, Product, formatCurrency } from "@/lib/mock-data/products";
+import { ProductFormSheet } from "@/components/products/product-form-sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
-// Product categories
-const CATEGORIES = ["Software", "Hardware", "Services", "Consulting", "Training", "Support"];
+export default function ProductsPage() {
+  const t = useTranslations("Products");
+  const tc = useTranslations("common");
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState(mockProducts);
 
-// Mock products data
-const mockProducts = [
-  { id: "1", name: "Enterprise CRM License", sku: "CRM-ENT-001", price: 15000, category: "Software", stock: "ACTIVE" as const, image: null },
-  { id: "2", name: "Professional CRM License", sku: "CRM-PRO-001", price: 5000, category: "Software", stock: "ACTIVE" as const, image: null },
-  { id: "3", name: "Basic CRM License", sku: "CRM-BAS-001", price: 1500, category: "Software", stock: "ACTIVE" as const, image: null },
-  { id: "4", name: "Implementation Package", sku: "SVC-IMP-001", price: 25000, category: "Services", stock: "ACTIVE" as const, image: null },
-  { id: "5", name: "Custom Integration", sku: "SVC-INT-001", price: 50000, category: "Consulting", stock: "PENDING" as const, image: null },
-  { id: "6", name: "Training Workshop", sku: "TRN-WRK-001", price: 3000, category: "Training", stock: "ACTIVE" as const, image: null },
-  { id: "7", name: "Premium Support", sku: "SUP-PRM-001", price: 12000, category: "Support", stock: "ACTIVE" as const, image: null },
-  { id: "8", name: "API Access Module", sku: "CRM-API-001", price: 8000, category: "Software", stock: "PENDING" as const, image: null },
-  { id: "9", name: "Legacy Migration", sku: "SVC-MIG-001", price: 35000, category: "Services", stock: "INACTIVE" as const, image: null },
-];
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-function formatCurrency(value: number, locale: string) {
-  return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
-    style: "currency",
-    currency: locale === "vi" ? "VND" : "USD",
-    minimumFractionDigits: 0,
-  }).format(locale === "vi" ? value * 25000 : value);
-}
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setIsSheetOpen(true);
+  };
 
-function CreateProductSheet({ 
-  open, 
-  onOpenChange 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void;
-}) {
-  const t = useTranslations("Sidebar");
-  const commonT = useTranslations("Common");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    sku: "",
-    price: "",
-    category: "",
-    description: "",
-    stock: "ACTIVE",
-  });
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsSheetOpen(true);
+  };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    onOpenChange(false);
-    setFormData({ name: "", sku: "", price: "", category: "", description: "", stock: "ACTIVE" });
+  const handleDeleteProduct = (id: number) => {
+    setProducts(products.filter((p) => p.id !== id));
+    toast.error(tc("delete") + " " + tc("success"));
+  };
+
+  const toggleStatus = (id: number) => {
+    setProducts(
+      products.map((p) =>
+        p.id === id ? { ...p, is_active: !p.is_active } : p
+      )
+    );
+    toast.info("Status updated");
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
-        className="w-full sm:max-w-xl p-0 flex flex-col"
-      >
-        <div className="px-6 py-5 border-b bg-white">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-100">
-              <Package className="h-5 w-5 text-purple-600" />
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200">
+              <Package className="h-6 w-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">{t("products")}</h2>
-              <p className="text-sm text-slate-500">{commonT("create")}</p>
-            </div>
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1 px-6 py-6">
-          <div className="space-y-6">
-            <div>
-              <Label>{commonT("details")}</Label>
-              <div className="mt-2 border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:border-indigo-300 transition-colors cursor-pointer">
-                <ImageIcon className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">Upload</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="name">{commonT("profile")}</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sku">SKU</Label>
-                  <Input
-                    id="sku"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">{commonT("save")}</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
-
-        <div className="px-6 py-4 border-t bg-slate-50 flex items-center justify-end gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            {commonT("cancel")}
-          </Button>
-          <Button 
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-indigo-600 hover:bg-indigo-700 min-w-[120px]"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {commonT("loading")}
-              </>
-            ) : (
-              commonT("create")
-            )}
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-export default function AdminProductsPage({ params: { locale } }: { params: { locale: string } }) {
-  const t = useTranslations("Sidebar");
-  const commonT = useTranslations("Common");
-  const ts = useTranslations("Status");
-  
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch = 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  return (
-    <div className="space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
-            {t("products")}
+            {t("title")}
           </h1>
-          <p className="text-slate-600 mt-1">
-            {commonT("team")}
+          <p className="text-slate-500 font-medium ml-12">
+            {t("subtitle")}
           </p>
         </div>
         
         <Button 
-          onClick={() => setIsSheetOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25"
+          onClick={handleAddProduct}
+          className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-xl shadow-indigo-100 border-none px-6 h-12 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          {commonT("add")}
+          <Plus className="h-5 w-5 mr-2" />
+          {t("addProduct")}
         </Button>
       </div>
 
-      <Card className="bg-white border-slate-200/60 shadow-sm">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder={commonT("search")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder={commonT("filter")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{commonT("all")}</SelectItem>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-slate-500 ml-auto">
-              {filteredProducts.length} {t("products").toLowerCase()}
-            </p>
+      {/* Stats Quick View (Optional aesthetic touch) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: "Total Items", value: products.length, icon: Box, color: "bg-blue-500" },
+          { label: "Software", value: products.filter(p => p.category === "Software").length, icon: Layers, color: "bg-indigo-500" },
+          { label: "Services", value: products.filter(p => p.category === "Service").length, icon: Settings2, color: "bg-purple-500" },
+        ].map((stat, i) => (
+          <div key={i} className="p-6 rounded-2xl bg-white/60 backdrop-blur-md border border-white/20 shadow-sm flex items-center gap-4">
+             <div className={`p-3 rounded-xl ${stat.color} bg-opacity-10`}>
+                <stat.icon className={`h-6 w-6 ${stat.color.replace('bg-', 'text-')}`} />
+             </div>
+             <div>
+                <p className="text-sm font-semibold text-slate-500">{stat.label}</p>
+                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredProducts.map((product) => {
-          return (
-            <Card 
-              key={product.id} 
-              className="bg-white border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
-            >
-              <CardContent className="p-0">
-                <div className="h-40 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border-b relative">
-                  <Package className="h-16 w-16 text-slate-200" />
-                  
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" className="h-8">
-                      <Edit className="h-3.5 w-3.5 mr-1" />
-                      {commonT("edit")}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-slate-900 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      SKU: {product.sku}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-emerald-600">
-                      {formatCurrency(product.price, locale)}
-                    </span>
-                    <Badge className="text-xs bg-emerald-100 text-emerald-700">
-                      {ts(product.stock)}
-                    </Badge>
-                  </div>
-                  
-                  <Badge variant="secondary" className="text-xs">
-                    {product.category}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        ))}
       </div>
 
-      <CreateProductSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+      {/* Main Content Card */}
+      <Card className="border-none bg-white/60 backdrop-blur-xl shadow-2xl shadow-slate-200/50 rounded-3xl overflow-hidden overflow-x-auto">
+        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder={tc("search") + " " + t("form.name").toLowerCase() + " / " + t("form.code").toLowerCase()}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-slate-50/50 border-slate-200 rounded-xl focus:ring-indigo-500/20"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-white/50 text-slate-500 px-3 py-1 rounded-lg">
+              {filteredProducts.length} {tc("all").toLowerCase()}
+            </Badge>
+          </div>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50/30 border-b border-slate-100 hover:bg-slate-50/30">
+              <TableHead className="w-[350px] font-bold text-slate-800 py-4">{t("table.info")}</TableHead>
+              <TableHead className="font-bold text-slate-800">{t("table.category")}</TableHead>
+              <TableHead className="font-bold text-slate-800">{t("table.price")}</TableHead>
+              <TableHead className="font-bold text-slate-800">{t("table.status")}</TableHead>
+              <TableHead className="text-right font-bold text-slate-800 pr-8">{t("table.actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <TableRow key={product.id} className="group border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-200/60 overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <Package className="h-6 w-6 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-slate-900 truncate">
+                          {product.name}
+                        </span>
+                        <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                          {product.code}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      className={`
+                        px-2.5 py-0.5 rounded-lg font-semibold text-[11px] uppercase tracking-wider border-none
+                        ${product.category === 'Software' ? 'bg-blue-100 text-blue-700 shadow-sm shadow-blue-100' : ''}
+                        ${product.category === 'Service' ? 'bg-purple-100 text-purple-700 shadow-sm shadow-purple-100' : ''}
+                        ${product.category === 'Hardware' ? 'bg-amber-100 text-amber-700 shadow-sm shadow-amber-100' : ''}
+                      `}
+                    >
+                      {t(`categories.${product.category}`)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-bold text-slate-900">
+                      {formatCurrency(product.unit_price, product.currency)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={product.is_active}
+                      onCheckedChange={() => toggleStatus(product.id)}
+                      className="data-[state=checked]:bg-indigo-600"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right pr-8">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-9 w-9 p-0 rounded-lg hover:bg-slate-100">
+                          <MoreVertical className="h-4 w-4 text-slate-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40 p-1.5 rounded-xl border-slate-200/60 shadow-xl bg-white/90 backdrop-blur-xl">
+                        <DropdownMenuItem onClick={() => handleEditProduct(product)} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer text-slate-700 focus:bg-indigo-50 focus:text-indigo-600 transition-colors">
+                          <Edit2 className="h-4 w-4" />
+                          <span className="font-medium text-sm">{tc("edit")}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer text-rose-600 focus:bg-rose-50 transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="font-medium text-sm">{tc("delete")}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-64 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div className="p-4 rounded-full bg-slate-50 text-slate-300">
+                      <Search className="h-8 w-8" />
+                    </div>
+                    <p className="text-slate-400 font-medium">{tc("noData")}</p>
+                    <Button variant="link" onClick={() => setSearchQuery("")} className="text-indigo-600 font-bold">
+                       {tc("clear")}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <ProductFormSheet 
+        open={isSheetOpen} 
+        onOpenChange={setIsSheetOpen} 
+        product={selectedProduct} 
+      />
     </div>
   );
 }

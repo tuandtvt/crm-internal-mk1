@@ -25,6 +25,7 @@ import {
   Crown,
   Briefcase,
   HeadphonesIcon,
+  X,
 } from "lucide-react";
 
 // Permission modules configuration
@@ -89,9 +90,9 @@ function CreateRoleSheet({
   open: boolean; 
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("Admin.roleSheet");
-  const commonT = useTranslations("Common");
-  const moduleT = useTranslations("Admin.modules");
+  const t = useTranslations("admin.roleSheet");
+  const commonT = useTranslations("common");
+  const moduleT = useTranslations("admin.modules");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -267,8 +268,8 @@ function CreateRoleSheet({
 }
 
 export default function RolesPage() {
-  const t = useTranslations("Admin");
-  const commonT = useTranslations("Common");
+  const t = useTranslations("admin");
+  const commonT = useTranslations("common");
   const [searchTerm, setSearchTerm] = useState("");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -308,6 +309,17 @@ export default function RolesPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
             />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchTerm("")}
+                className="h-9 px-2 text-slate-500 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="h-4 w-4 mr-1" />
+                {commonT("clear")}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

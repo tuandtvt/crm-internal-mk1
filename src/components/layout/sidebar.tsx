@@ -85,6 +85,16 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    titleKey: "catalog",
+    items: [
+      {
+        titleKey: "products",
+        href: "/admin/products",
+        icon: <Package className="h-5 w-5" />,
+      },
+    ],
+  },
+  {
     titleKey: "admin",
     items: [
       {
@@ -106,11 +116,6 @@ const navSections: NavSection[] = [
         titleKey: "shareConfig",
         href: "/admin/share",
         icon: <Share2 className="h-5 w-5" />,
-      },
-      {
-        titleKey: "products",
-        href: "/admin/products",
-        icon: <Package className="h-5 w-5" />,
       },
     ],
   },
@@ -148,7 +153,7 @@ export function Sidebar() {
           isCollapsed ? "w-[80px]" : "w-[260px]"
         )}
       >
-        <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50">
+        <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50 overflow-hidden">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-6">
             {!isCollapsed && (

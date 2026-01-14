@@ -48,6 +48,7 @@ import {
   FileText,
   Building2,
   Loader2,
+  X,
 } from "lucide-react";
 
 // Mock customers
@@ -102,9 +103,10 @@ function CreateDealSheet({
   open: boolean; 
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("Deals");
-  const tc = useTranslations("Common");
-  const ts = useTranslations("Status");
+  const t = useTranslations("pipeline");
+  const tc = useTranslations("common");
+  const ts = useTranslations("status");
+  const td = useTranslations("deals");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -291,10 +293,10 @@ function CreateDealSheet({
 }
 
 export default function PipelinePage({ params: { locale } }: { params: { locale: string } }) {
-  const t = useTranslations("Pipeline");
-  const td = useTranslations("Deals");
-  const tc = useTranslations("Common");
-  const ts = useTranslations("Status");
+  const t = useTranslations("pipeline");
+  const td = useTranslations("deals");
+  const tc = useTranslations("common");
+  const ts = useTranslations("status");
   const [deals, setDeals] = useState(mockDeals);
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
@@ -436,6 +438,21 @@ export default function PipelinePage({ params: { locale } }: { params: { locale:
                   ))}
                 </SelectContent>
               </Select>
+
+              {(searchTerm || stageFilter !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStageFilter("all");
+                  }}
+                  className="h-9 px-2 text-slate-500 hover:text-slate-900"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  {tc("clear")}
+                </Button>
+              )}
             </div>
             <p className="text-sm text-slate-500">
               {filteredDeals.length} {td("title").toLowerCase()}

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { mockTemplates as initialTemplates, EmailTemplate } from "@/lib/mock-data/marketing";
 import { useTranslations } from "next-intl";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 import {
   Select,
   SelectContent,
@@ -23,24 +24,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Eye, Plus, Search, Edit2, Copy, Trash2, Mail, Calendar, BarChart3, X } from "lucide-react";
+import { Eye, Plus, Edit2, Copy, Trash2, Mail, Calendar, BarChart3 } from "lucide-react";
 
 export default function TemplatesPage() {
-  const t = useTranslations("marketing");
   const tt = useTranslations("templates");
   const tc = useTranslations("common");
 
+  const { getValue, getValues } = useUrlFilters();
+  const searchQuery = getValue("q") || "";
+  const categoryFilters = getValues("category");
+
   const [templates, setTemplates] = useState<EmailTemplate[]>(initialTemplates);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -51,13 +45,11 @@ export default function TemplatesPage() {
     htmlContent: "",
   });
 
-  const categories = ["all", "promotional", "newsletter", "transactional", "announcement"] as const;
-
   const filteredTemplates = templates.filter((template) => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || template.category === categoryFilter;
+    const matchesCategory = categoryFilters.length === 0 || categoryFilters.includes(template.category);
     return matchesSearch && matchesCategory;
   });
 
@@ -134,30 +126,7 @@ export default function TemplatesPage() {
         </Button>
       </div>
 
-      {/* Search & Filter */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder={tc("search")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={tt("filterByCategory")} />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat} className="capitalize">
-                {cat === "all" ? tc("all") : tt(`categories.${cat}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+
 
       {/* Compact Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -314,98 +283,128 @@ export default function TemplatesPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Create Template Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-violet-500" />
-              {tt("createTemplate")}
-            </DialogTitle>
-            <DialogDescription>{tt("createDescription")}</DialogDescription>
-          </DialogHeader>
+      {/* Create Template Sheet */}
+      <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+        <SheetContent className="w-full sm:max-w-xl p-0 flex flex-col">
+          {/* Header */}
+          <SheetHeader className="px-6 py-5 border-b bg-gradient-to-r from-violet-50 to-white">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-violet-100 flex items-center justify-center">
+                <Mail className="h-5 w-5 text-violet-600" />
+              </div>
+              <div>
+                <SheetTitle className="text-lg">{tt("createTemplate")}</SheetTitle>
+                <SheetDescription className="text-sm text-slate-500">
+                  {tt("createDescription")}
+                </SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
 
-          <div className="space-y-4 py-4">
+          {/* Form Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+            {/* Basic Info Section */}
             <div>
-              <Label htmlFor="template-name" className="text-slate-700 font-medium">
-                {tt("templateName")} <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="template-name"
-                placeholder={tt("templateNamePlaceholder")}
-                value={newTemplate.name}
-                onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
-                className="mt-1.5"
-              />
+              <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                <Mail className="h-4 w-4 text-slate-500" />
+                {tc("details")}
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="template-name">
+                    {tt("templateName")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="template-name"
+                    placeholder={tt("templateNamePlaceholder")}
+                    value={newTemplate.name}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">
+                    {tt("templateDescription")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="description"
+                    rows={3}
+                    placeholder={tt("templateDescriptionPlaceholder")}
+                    value={newTemplate.description}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
             </div>
 
+            {/* Category Section */}
             <div>
-              <Label htmlFor="category" className="text-slate-700 font-medium">
-                {tt("category")} <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={newTemplate.category}
-                onValueChange={(value) =>
-                  setNewTemplate({ ...newTemplate, category: value as EmailTemplate["category"] })
-                }
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="promotional">{tt("categories.promotional")}</SelectItem>
-                  <SelectItem value="newsletter">{tt("categories.newsletter")}</SelectItem>
-                  <SelectItem value="transactional">{tt("categories.transactional")}</SelectItem>
-                  <SelectItem value="announcement">{tt("categories.announcement")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-slate-500" />
+                {tt("category")}
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="category">
+                  {tt("category")} <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={newTemplate.category}
+                  onValueChange={(value) =>
+                    setNewTemplate({ ...newTemplate, category: value as EmailTemplate["category"] })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="promotional">{tt("categories.promotional")}</SelectItem>
+                    <SelectItem value="newsletter">{tt("categories.newsletter")}</SelectItem>
+                    <SelectItem value="transactional">{tt("categories.transactional")}</SelectItem>
+                    <SelectItem value="announcement">{tt("categories.announcement")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
+            {/* HTML Content Section */}
             <div>
-              <Label htmlFor="description" className="text-slate-700 font-medium">
-                {tt("templateDescription")} <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="description"
-                rows={3}
-                placeholder={tt("templateDescriptionPlaceholder")}
-                value={newTemplate.description}
-                onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
-                className="mt-1.5 resize-none"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="html-content" className="text-slate-700 font-medium">
+              <h3 className="text-sm font-medium text-slate-900 mb-4 flex items-center gap-2">
+                <Edit2 className="h-4 w-4 text-slate-500" />
                 {tt("htmlContent")}
-              </Label>
-              <Textarea
-                id="html-content"
-                rows={6}
-                placeholder={tt("htmlContentPlaceholder")}
-                value={newTemplate.htmlContent}
-                onChange={(e) => setNewTemplate({ ...newTemplate, htmlContent: e.target.value })}
-                className="mt-1.5 resize-none font-mono text-sm"
-              />
-              <p className="text-xs text-slate-500 mt-1.5 italic">💡 {tt("htmlNote")}</p>
+              </h3>
+              <div className="space-y-2">
+                <Textarea
+                  id="html-content"
+                  rows={8}
+                  placeholder={tt("htmlContentPlaceholder")}
+                  value={newTemplate.htmlContent}
+                  onChange={(e) => setNewTemplate({ ...newTemplate, htmlContent: e.target.value })}
+                  className="resize-none font-mono text-sm"
+                />
+                <p className="text-xs text-slate-500 italic">💡 {tt("htmlNote")}</p>
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)} className="cursor-pointer">
+          {/* Footer */}
+          <div className="px-6 py-4 border-t bg-slate-50 flex items-center justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setCreateOpen(false)}
+            >
               {tc("cancel")}
             </Button>
             <Button
-              className="bg-gradient-premium cursor-pointer"
+              className="bg-gradient-premium min-w-[140px]"
               onClick={handleCreateTemplate}
               disabled={!newTemplate.name || !newTemplate.description}
             >
               <Plus className="h-4 w-4 mr-2" />
               {tt("createTemplate")}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

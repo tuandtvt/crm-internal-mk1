@@ -93,7 +93,7 @@ function isOverdue(date: Date): boolean {
 }
 
 function StageStepper({ currentStage, locale }: { currentStage: string; locale: string }) {
-  const ts = useTranslations("Status");
+  const ts = useTranslations("status");
   const stages = [
     { id: "new", label: ts("NEW"), color: "bg-slate-500" },
     { id: "contacted", label: ts("CONTACTED"), color: "bg-blue-500" },

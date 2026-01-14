@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,10 +71,13 @@ import {
   Trash2,
   Lightbulb,
   Linkedin,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Customer } from "@/types";
 import { mockCustomers } from "@/lib/mock-data/customers";
+import { mockUsers } from "@/lib/mock-data/users";
+import { DataTableFacetedFilter } from "@/components/ui/data-table-faceted-filter";
 
 // Company options (should probably come from translations/DB too, but keeping ID based for now)
 const COMPANIES = [
@@ -87,7 +91,7 @@ const COMPANIES = [
 ];
 
 // Format relative time (localized)
-function formatRelativeTime(date: Date, locale: string, t: (key: string, values?: any) => string): string {
+function formatRelativeTime(date: Date, locale: string, t: (key: string, values?: Record<string, string | number>) => string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -124,7 +128,7 @@ function CustomerSheet({
     company: customer?.company_name || "",
     position: "",
     source: customer?.source || "",
-    status: customer?.type || "lead",
+    status: customer?.type || "LEAD",
     address: "",
     // B2B Fields
     website: customer?.website || "",
@@ -145,13 +149,13 @@ function CustomerSheet({
     
     onSave({
       ...customer,
-      name: `${formData.firstName} ${formData.lastName}`,
+      name: `${formData.firstName} ${formData.lastName}`.trim(),
       email: formData.email,
       phone: formData.phone,
       company_name: formData.company,
       source: formData.source,
-      type: formData.status as "lead" | "prospect" | "vip",
-    });
+      type: formData.status as "LEAD" | "CUSTOMER",
+    } as Partial<Customer>);
     
     toast.success(isEditing ? t("updateCustomer") : t("createCustomer"));
     onOpenChange(false);
@@ -311,15 +315,14 @@ function CustomerSheet({
                   <Label htmlFor="status">{t("customerStatus")}</Label>
                   <Select 
                     value={formData.status} 
-                    onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                    onValueChange={(value: "LEAD" | "CUSTOMER") => setFormData({ ...formData, status: value })}
                   >
                     <SelectTrigger id="status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="lead">{t("lead")}</SelectItem>
-                      <SelectItem value="prospect">{t("prospect")}</SelectItem>
-                      <SelectItem value="vip">{t("vip")}</SelectItem>
+                      <SelectItem value="LEAD">{t("lead")}</SelectItem>
+                      <SelectItem value="CUSTOMER">{t("customer")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -459,26 +462,51 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   const td = useTranslations("dashboard");
   const tc = useTranslations("common");
   const tt = useTranslations("toast");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("all");
+  const searchParams = useSearchParams();
+  
+  // Read all filters from URL
+  const searchTerm = searchParams.get("q") || "";
+  const industryParam = searchParams.get("industry")?.split(",").filter(Boolean) || [];
+  const sourceParam = searchParams.get("source")?.split(",").filter(Boolean) || [];
+  const ownerParam = searchParams.get("owner_id")?.split(",").filter(Boolean) || [];
+
+  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([
-    { id: "1", name: "John Anderson", email: "john.anderson@techcorp.com", phone: "+1-555-0123", company: "TechCorp Inc.", industry: "Technology", source: "website", type: "vip", owner: "Jane Smith", updatedAt: new Date("2026-01-10") },
-    { id: "2", name: "Sarah Williams", email: "sarah.w@startupxyz.io", phone: "+1-555-0124", company: "StartupXYZ", industry: "Technology", source: "referral", type: "prospect", owner: "John Doe", updatedAt: new Date("2026-01-08") },
-    { id: "3", name: "Michael Chen", email: "m.chen@megacorp.com", phone: "+1-555-0125", company: "MegaCorp Ltd.", industry: "Manufacturing", source: "event", type: "lead", owner: "Sarah Connor", updatedAt: new Date("2026-01-05") },
-    { id: "4", name: "Emily Davis", email: "emily.davis@financehub.com", phone: "+1-555-0126", company: "FinanceHub", industry: "Finance", source: "cold-call", type: "prospect", owner: "Jane Smith", updatedAt: new Date("2026-01-03") },
-    { id: "5", name: "Robert Johnson", email: "r.johnson@retailmax.com", phone: "+1-555-0127", company: "RetailMax", industry: "Retail", source: "partner", type: "vip", owner: "John Doe", updatedAt: new Date("2026-01-12") },
-    { id: "6", name: "Lisa Thompson", email: "lisa.t@healthcare-plus.org", phone: "+1-555-0128", company: "HealthCare+", industry: "Healthcare", source: "website", type: "lead", owner: "Sarah Connor", updatedAt: new Date("2025-12-28") },
-  ]);
 
+  // Industry options for FacetedFilter
+  const industryOptions = [
+    { label: "EdTech", value: "EdTech" },
+    { label: "HealthTech", value: "HealthTech" },
+    { label: "FinTech", value: "FinTech" },
+    { label: "E-commerce", value: "E-commerce" },
+    { label: "SaaS", value: "SaaS" },
+  ];
+
+  // Source options for FacetedFilter
+  const sourceOptions = [
+    { label: "Website", value: "website", icon: Globe },
+    { label: "Referral", value: "referral", icon: UsersIcon },
+    { label: "Social Media", value: "social", icon: MessageSquare },
+    { label: "Cold Call", value: "cold-call", icon: Phone },
+    { label: "Event", value: "event", icon: Calendar },
+    { label: "Partner", value: "partner", icon: Zap },
+  ];
+
+  // Owner options for FacetedFilter (searchable by name)
+  const ownerOptions = mockUsers.map(user => ({
+    label: user.name,
+    value: String(user.id),
+  }));
+
+  // Customer type styling
   const CUSTOMER_TYPES = {
-    lead: { label: t("lead"), bgColor: "bg-blue-100", textColor: "text-blue-700" },
-    prospect: { label: t("prospect"), bgColor: "bg-indigo-100", textColor: "text-indigo-700" },
-    vip: { label: t("vip"), bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
+    LEAD: { label: t("lead"), bgColor: "bg-blue-100", textColor: "text-blue-700" },
+    CUSTOMER: { label: t("customer"), bgColor: "bg-emerald-100", textColor: "text-emerald-700" },
   } as const;
 
+  // Source display config (keep for table display)
   const SOURCES = [
     { id: "website", label: "Website", icon: Globe },
     { id: "referral", label: "Referral", icon: UsersIcon },
@@ -491,10 +519,12 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch = 
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSource = sourceFilter === "all" || customer.source === sourceFilter;
-    return matchesSearch && matchesSource;
+      (customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesSource = sourceParam.length === 0 || (customer.source && sourceParam.includes(customer.source));
+    const matchesIndustry = industryParam.length === 0 || (customer.industry && industryParam.includes(customer.industry));
+    const matchesOwner = ownerParam.length === 0 || ownerParam.includes(String(customer.owner_id));
+    return matchesSearch && matchesSource && matchesIndustry && matchesOwner;
   });
 
   const handleAddNew = () => {
@@ -510,17 +540,18 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
   const handleSave = (data: Partial<Customer>) => {
     if (selectedCustomer) {
       setCustomers(customers.map(c => 
-        c.id === selectedCustomer.id ? { ...c, ...data, updatedAt: new Date() } : c
+        c.id === selectedCustomer.id ? { ...c, ...data, updated_at: new Date() } : c
       ));
     } else {
-      const { id: _id, ...rest } = data; // Prefix with _ to show it's intentionally unused
+      const { ...rest } = data;
       const newCustomer: Customer = {
-        id: String(customers.length + 1),
-        ...rest as Omit<Customer, 'id'>,
-        industry: "Technology",
-        owner: "Current User",
-        updatedAt: new Date(),
-      };
+        ...rest,
+        id: customers.length + 1,
+        code: `CUS-${String(customers.length + 1).padStart(3, '0')}`,
+        created_at: new Date(),
+        updated_at: new Date(),
+        owner_id: 1,
+      } as Customer;
       setCustomers([...customers, newCustomer]);
     }
   };
@@ -572,56 +603,28 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
           </p>
         </div>
         
-        <Button 
-          onClick={handleAddNew}
-          className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25 cursor-pointer"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("newCustomer")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleImport} className="cursor-pointer">
+            <Upload className="h-4 w-4 mr-2" />
+            {tc("import")}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExport} className="cursor-pointer">
+            <Download className="h-4 w-4 mr-2" />
+            {tc("export")}
+          </Button>
+          <Button 
+            onClick={handleAddNew}
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25 cursor-pointer"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t("newCustomer")}
+          </Button>
+        </div>
       </div>
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
-            <div className="flex flex-1 gap-3 items-center flex-wrap w-full lg:w-auto">
-              <div className="relative flex-1 min-w-[200px] lg:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder={t("searchPlaceholder")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={t("source")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("allSources")}</SelectItem>
-                  {SOURCES.map((source) => (
-                    <SelectItem key={source.id} value={source.id}>
-                      {source.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleImport} className="cursor-pointer">
-                <Upload className="h-4 w-4 mr-2" />
-                {tc("import")}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleExport} className="cursor-pointer">
-                <Download className="h-4 w-4 mr-2" />
-                {tc("export")}
-              </Button>
-            </div>
-          </div>
-          
-          <p className="text-sm text-slate-500 mt-3">
+          <p className="text-sm text-slate-500">
             {filteredCustomers.length} {t("customersCount")}
           </p>
         </CardHeader>
@@ -652,7 +655,7 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
                               <AvatarFallback className="bg-indigo-100 text-indigo-700 text-sm font-medium">
-                                {customer.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                                {customer.name ? customer.name.split(" ").map((n) => n[0]).join("").slice(0, 2) : "U"}
                               </AvatarFallback>
                             </Avatar>
                             <div>
@@ -668,7 +671,7 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-slate-900">{customer.company}</p>
+                            <p className="font-medium text-slate-900">{customer.company_name || "-"}</p>
                             <Badge variant="secondary" className="mt-1 text-xs font-normal">
                               {customer.industry}
                             </Badge>
@@ -676,8 +679,8 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2 text-slate-600">
-                            {getSourceIcon(customer.source)}
-                            <span className="text-sm">{sourceConfig?.label || customer.source}</span>
+                            {getSourceIcon(customer.source || "")}
+                            <span className="text-sm">{sourceConfig?.label || customer.source || "-"}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -687,19 +690,26 @@ export default function CustomersPage({ params: { locale } }: { params: { locale
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-slate-600">
-                            {formatRelativeTime(customer.updatedAt, locale, td)}
+                            {formatRelativeTime(customer.updated_at || new Date(), locale, td)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs bg-slate-100 text-slate-600">
-                                {customer.owner.split(" ").map((n) => n[0]).join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-slate-600 hidden xl:inline">
-                              {customer.owner}
-                            </span>
+                            {(() => {
+                              const owner = mockUsers.find(u => u.id === customer.owner_id);
+                              return (
+                                <>
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="text-xs bg-slate-100 text-slate-600">
+                                      {owner?.name ? owner.name.split(" ").map((n: string) => n[0]).join("") : "U"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm text-slate-600 hidden xl:inline">
+                                    {owner?.name || t("unassigned")}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>

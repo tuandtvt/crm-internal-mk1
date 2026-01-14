@@ -37,6 +37,7 @@ import {
   Calendar,
   Loader2,
   MoreHorizontal,
+  X,
 } from "lucide-react";
 
 // Mock managers data
@@ -64,8 +65,8 @@ function CreateDepartmentSheet({
   open: boolean; 
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("Admin.departmentSheet");
-  const commonT = useTranslations("Common");
+  const t = useTranslations("admin.departmentSheet");
+  const commonT = useTranslations("common");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -181,8 +182,8 @@ function CreateDepartmentSheet({
 }
 
 export default function DepartmentsPage() {
-  const t = useTranslations("Admin");
-  const commonT = useTranslations("Common");
+  const t = useTranslations("admin");
+  const commonT = useTranslations("common");
   const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -207,10 +208,10 @@ export default function DepartmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
-            {commonT("department")}
+            {t("departmentsTitle")}
           </h1>
           <p className="text-slate-600 mt-1">
-            {commonT("team")}
+            {t("departmentsDescription")}
           </p>
         </div>
         
@@ -241,15 +242,6 @@ export default function DepartmentsPage() {
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder={commonT("search")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
             <p className="text-sm text-slate-500">
               {filteredDepartments.length} {commonT("department").toLowerCase()}
             </p>

@@ -345,3 +345,230 @@ export function getSLATimeRemaining(deadline: Date): string {
   
   return `${hours}h ${minutes}m`;
 }
+
+// Audit Log Types
+export interface TicketAuditLog {
+  id: string;
+  ticketId: string;
+  action: "created" | "status_changed" | "priority_changed" | "assigned" | "updated" | "category_changed";
+  field?: string;
+  previousValue?: string;
+  newValue?: string;
+  performedBy: string;
+  timestamp: Date;
+}
+
+// Mock Audit Logs
+export const mockTicketAuditLogs: { [ticketId: string]: TicketAuditLog[] } = {
+  t1: [
+    {
+      id: "al1",
+      ticketId: "t1",
+      action: "created",
+      performedBy: "John Anderson",
+      timestamp: new Date("2026-01-12T09:30:00"),
+    },
+    {
+      id: "al2",
+      ticketId: "t1",
+      action: "assigned",
+      newValue: "Sarah Connor",
+      performedBy: "System",
+      timestamp: new Date("2026-01-12T09:31:00"),
+    },
+    {
+      id: "al3",
+      ticketId: "t1",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "open",
+      performedBy: "Sarah Connor",
+      timestamp: new Date("2026-01-12T10:15:00"),
+    },
+    {
+      id: "al4",
+      ticketId: "t1",
+      action: "priority_changed",
+      previousValue: "medium",
+      newValue: "high",
+      performedBy: "Sarah Connor",
+      timestamp: new Date("2026-01-13T11:16:00"),
+    },
+  ],
+  t2: [
+    {
+      id: "al5",
+      ticketId: "t2",
+      action: "created",
+      performedBy: "Emily Davis",
+      timestamp: new Date("2026-01-11T14:20:00"),
+    },
+    {
+      id: "al6",
+      ticketId: "t2",
+      action: "assigned",
+      newValue: "John Doe",
+      performedBy: "System",
+      timestamp: new Date("2026-01-11T14:25:00"),
+    },
+    {
+      id: "al7",
+      ticketId: "t2",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "open",
+      performedBy: "John Doe",
+      timestamp: new Date("2026-01-11T15:30:00"),
+    },
+    {
+      id: "al8",
+      ticketId: "t2",
+      action: "status_changed",
+      previousValue: "open",
+      newValue: "pending",
+      performedBy: "John Doe",
+      timestamp: new Date("2026-01-13T10:45:00"),
+    },
+  ],
+  t3: [
+    {
+      id: "al9",
+      ticketId: "t3",
+      action: "created",
+      performedBy: "Michael Chen",
+      timestamp: new Date("2026-01-13T08:15:00"),
+    },
+  ],
+  t4: [
+    {
+      id: "al10",
+      ticketId: "t4",
+      action: "created",
+      performedBy: "Sarah Williams",
+      timestamp: new Date("2026-01-13T12:00:00"),
+    },
+    {
+      id: "al11",
+      ticketId: "t4",
+      action: "priority_changed",
+      previousValue: "high",
+      newValue: "urgent",
+      performedBy: "System",
+      timestamp: new Date("2026-01-13T12:01:00"),
+    },
+    {
+      id: "al12",
+      ticketId: "t4",
+      action: "assigned",
+      newValue: "Sarah Connor",
+      performedBy: "System",
+      timestamp: new Date("2026-01-13T12:02:00"),
+    },
+    {
+      id: "al13",
+      ticketId: "t4",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "open",
+      performedBy: "Sarah Connor",
+      timestamp: new Date("2026-01-13T12:05:00"),
+    },
+  ],
+  t5: [
+    {
+      id: "al14",
+      ticketId: "t5",
+      action: "created",
+      performedBy: "Robert Johnson",
+      timestamp: new Date("2026-01-10T10:00:00"),
+    },
+    {
+      id: "al15",
+      ticketId: "t5",
+      action: "assigned",
+      newValue: "Jane Smith",
+      performedBy: "System",
+      timestamp: new Date("2026-01-10T10:05:00"),
+    },
+    {
+      id: "al16",
+      ticketId: "t5",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "open",
+      performedBy: "Jane Smith",
+      timestamp: new Date("2026-01-10T11:00:00"),
+    },
+    {
+      id: "al17",
+      ticketId: "t5",
+      action: "status_changed",
+      previousValue: "open",
+      newValue: "resolved",
+      performedBy: "Jane Smith",
+      timestamp: new Date("2026-01-12T15:20:00"),
+    },
+  ],
+  t6: [
+    {
+      id: "al18",
+      ticketId: "t6",
+      action: "created",
+      performedBy: "Lisa Thompson",
+      timestamp: new Date("2026-01-12T16:45:00"),
+    },
+    {
+      id: "al19",
+      ticketId: "t6",
+      action: "assigned",
+      newValue: "John Doe",
+      performedBy: "System",
+      timestamp: new Date("2026-01-12T16:50:00"),
+    },
+    {
+      id: "al20",
+      ticketId: "t6",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "open",
+      performedBy: "John Doe",
+      timestamp: new Date("2026-01-13T09:00:00"),
+    },
+  ],
+  t7: [
+    {
+      id: "al21",
+      ticketId: "t7",
+      action: "created",
+      performedBy: "David Miller",
+      timestamp: new Date("2026-01-11T11:30:00"),
+    },
+    {
+      id: "al22",
+      ticketId: "t7",
+      action: "assigned",
+      newValue: "Jane Smith",
+      performedBy: "System",
+      timestamp: new Date("2026-01-11T11:35:00"),
+    },
+    {
+      id: "al23",
+      ticketId: "t7",
+      action: "status_changed",
+      previousValue: "new",
+      newValue: "pending",
+      performedBy: "Jane Smith",
+      timestamp: new Date("2026-01-12T14:00:00"),
+    },
+  ],
+  t8: [
+    {
+      id: "al24",
+      ticketId: "t8",
+      action: "created",
+      performedBy: "Jennifer Brown",
+      timestamp: new Date("2026-01-13T13:20:00"),
+    },
+  ],
+};
+

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +36,9 @@ import {
   CheckCircle2,
   Circle,
   AlertTriangle,
+  X,
 } from "lucide-react";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 
 // Priority configuration
 const PRIORITIES = {
@@ -129,14 +133,24 @@ function formatDueDate(date: Date, completed: boolean, locale: string, t: any) {
 }
 
 export default function TasksPage({ params: { locale } }: { params: { locale: string } }) {
-  const t = useTranslations("Tasks");
-  const tc = useTranslations("Common");
-  const ts = useTranslations("Status");
+  const t = useTranslations("tasks");
+  const tc = useTranslations("common");
+  const ts = useTranslations("status");
   const tg = useTranslations(); // For global access
   
   const [tasks, setTasks] = useState(mockTasks);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("all");
+  const searchParams = useSearchParams();
+  
+  // Read filters from URL
+  const searchTerm = searchParams.get("q") || "";
+  const priorityParam = searchParams.get("priority")?.split(",").filter(Boolean) || [];
+  const fromDate = searchParams.get("from");
+  const toDate = searchParams.get("to");
+  const dateRange = fromDate && toDate ? {
+    from: new Date(fromDate),
+    to: new Date(toDate),
+  } : undefined;
+
   const [showCompleted, setShowCompleted] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -149,9 +163,11 @@ export default function TasksPage({ params: { locale } }: { params: { locale: st
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (task.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+    const matchesPriority = priorityParam.length === 0 || priorityParam.includes(task.priority);
     const matchesCompleted = showCompleted || !task.completed;
-    return matchesSearch && matchesPriority && matchesCompleted;
+    const matchesDate = !dateRange?.from || !dateRange?.to || 
+      (task.dueDate >= dateRange.from && task.dueDate <= dateRange.to);
+    return matchesSearch && matchesPriority && matchesCompleted && matchesDate;
   });
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
@@ -296,39 +312,19 @@ export default function TasksPage({ params: { locale } }: { params: { locale: st
       </div>
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder={tc("search")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={t("filterByPriority")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tc("all")}</SelectItem>
-                <SelectItem value="high">{ts("HIGH")}</SelectItem>
-                <SelectItem value="medium">{ts("MEDIUM")}</SelectItem>
-                <SelectItem value="low">{ts("LOW")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="showCompleted"
-                checked={showCompleted}
-                onCheckedChange={(checked) => setShowCompleted(checked === true)}
-              />
-              <Label htmlFor="showCompleted" className="text-sm text-slate-600 cursor-pointer">
-                {t("showCompleted")}
-              </Label>
-            </div>
+        <CardContent className="p-4 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            {sortedTasks.length} tasks
+          </p>
+          <div className="flex items-center gap-2">
+            <Checkbox 
+              id="showCompleted"
+              checked={showCompleted}
+              onCheckedChange={(checked) => setShowCompleted(checked === true)}
+            />
+            <Label htmlFor="showCompleted" className="text-sm text-slate-600 cursor-pointer">
+              {t("showCompleted")}
+            </Label>
           </div>
         </CardContent>
       </Card>

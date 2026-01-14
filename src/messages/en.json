@@ -28,7 +28,26 @@
     "overview": "Overview",
     "details": "Details",
     "settings": "Settings",
-    "selected": "Selected"
+    "selected": "Selected",
+    "close": "Close",
+    "clear": "Clear",
+    "role": "Role",
+    "department": "Department",
+    "roles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "sales": "Sales",
+      "support": "Support"
+    },
+    "team": "Team",
+    "create": "Create",
+    "searchCustomers": "Search customers...",
+    "searchLeads": "Search leads...",
+    "searchDeals": "Search deals...",
+    "searchContracts": "Search contracts...",
+    "searchTasks": "Search tasks...",
+    "searchTickets": "Search tickets...",
+    "searchTemplates": "Search templates..."
   },
   "auth": {
     "login": {
@@ -70,11 +89,12 @@
     "dashboard": "Dashboard",
     "overview": "Overview",
     "sales": "Sales",
+    "catalog": "Catalog",
     "marketing": "Marketing",
     "support": "Support",
     "admin": "Admin",
     "customers": "Customers",
-    "pipeline": "Pipeline",
+    "leads": "Leads",
     "deals": "Deals",
     "contracts": "Contracts",
     "tasks": "Tasks",
@@ -200,16 +220,24 @@
     "intelligence": "Lead Intelligence",
     "addNew": "Add New"
   },
-  "pipeline": {
-    "title": "Pipeline",
-    "subtitle": "Manage and track your sales pipeline",
-    "description": "Manage and track your sales pipeline",
-    "pipelineValue": "Pipeline Value",
-    "wonValue": "Won Value",
-    "avgDealSize": "Avg Deal Size",
-    "winRate": "Win Rate",
-    "newDeal": "New Deal",
-    "searchPlaceholder": "Search deals..."
+  "leads": {
+    "title": "Leads Management",
+    "description": "Track and manage your sales leads",
+    "convertToCustomer": "Convert to Customer",
+    "convertSuccess": "Lead converted to customer successfully",
+    "newLeads": "New Leads",
+    "qualified": "Qualified",
+    "contacted": "Contacted"
+  },
+  "filters": {
+    "dateRange": "Date Range",
+    "industry": "Industry",
+    "owner": "Owner",
+    "selectDateRange": "Select date range",
+    "from": "From",
+    "to": "To",
+    "allIndustries": "All Industries",
+    "allOwners": "All Owners"
   },
   "deals": {
     "title": "Deals Management",
@@ -257,6 +285,9 @@
     "CLOSED": "Closed",
     "DRAFT": "Draft",
     "SENT": "Sent",
+    "SENDING": "Sending",
+    "SCHEDULED": "Scheduled",
+    "PAUSED": "Paused",
     "SIGNED": "Signed",
     "EXPIRED": "Expired",
     "HIGH": "High",
@@ -358,9 +389,38 @@
       "selectManager": "Select manager (optional)",
       "deptDescription": "Description",
       "descPlaceholder": "Describe the department's function and responsibilities...",
-      "note": "Users can be assigned to this department after creation from the User Management page.",
       "creating": "Creating..."
-    }
+    },
+    "shareTitle": "Share Configuration",
+    "shareDescription": "Configure data access rules and sharing policies",
+    "advancedSettings": "Advanced Settings",
+    "sharingImpact": "Sharing Settings Impact",
+    "sharingImpactDesc": "Changes to sharing rules will affect data visibility for all users immediately. Review changes carefully before saving.",
+    "defaultSharing": "Default Sharing Rules",
+    "defaultSharingDesc": "Set the default access level for each module. Users can override with specific rules.",
+    "sharingRules": "Sharing Rules",
+    "sharingRulesDesc": "Exception rules that override default sharing settings",
+    "addRule": "Add Rule",
+    "saveDefaults": "Save Defaults",
+    "accessLevel": "Default Access Level",
+    "module": "Module",
+    "accessLevels": {
+      "private": "Private",
+      "publicRead": "Public Read",
+      "publicReadWrite": "Public Read/Write"
+    },
+    "accessLevelDesc": {
+      "private": "Only owner can access",
+      "publicRead": "Everyone can view",
+      "publicReadWrite": "Everyone can view and edit"
+    },
+    "bestPractices": "Sharing Best Practices",
+    "bestPracticesList": [
+      "Start with Private defaults and grant access through specific rules",
+      "Use department-based sharing for team collaboration",
+      "Review sharing rules quarterly to ensure they align with organizational changes",
+      "Test rule changes with a pilot group before organization-wide rollout"
+    ]
   },
   "marketing": {
     "title": "Marketing Overview",
@@ -388,20 +448,57 @@
     "legendOpened": "Opened",
     "filterByStatus": "Filter by status",
     "sendingProgress": "Sending Progress",
-    "scheduledFor": "Scheduled for"
+    "scheduledFor": "Scheduled for",
+    "campaignName":"Campaign Name",
+    "status": "Status",
+    "performance": "Performance",
+    "type": "Type",
+    "channels": {
+      "email": "Email",
+      "facebook": "Facebook",
+      "google": "Google ADS",
+      "tiktok": "TikTok",
+      "linkedin": "LinkedIn",
+      "youtube": "YouTube"
+    },
+    "metrics": {
+      "spend": "Spend",
+      "reach": "Reach",
+      "impressions": "Impressions",
+      "views": "Views",
+      "cpc": "CPC",
+      "roi": "ROI"
+    },
+    "showing": "Showing",
+    "to": "to",
+    "of": "of"
   },
   "support": {
     "title": "Support Tickets",
     "description": "Manage customer support requests",
-    "tickets": "Support Tickets",
+    "tickets": "tickets",
     "searchTickets": "Search tickets...",
     "filterByStatus": "Filter by status",
+    "filterByPriority": "Filter by priority",
+    "noTickets": "No tickets found",
+    "page": "Page",
     "status": {
       "all": "All Status",
       "new": "New",
       "open": "Open",
       "pending": "Pending",
       "resolved": "Resolved"
+    },
+    "stats": {
+      "total": "Total Tickets",
+      "new": "New",
+      "open": "Open",
+      "pending": "Pending",
+      "resolved": "Resolved"
+    },
+    "table": {
+      "title": "Title",
+      "customer": "Customer"
     },
     "sla": "SLA",
     "viewFullConversation": "View Full Conversation →",
@@ -416,8 +513,23 @@
       "created": "Created",
       "lastUpdated": "Last Updated"
     },
+    "auditLog": {
+      "title": "Activity Log",
+      "created": "Ticket created",
+      "statusChanged": "Status changed:",
+      "priorityChanged": "Priority changed:",
+      "categoryChanged": "Category changed:",
+      "assigned": "Assigned to",
+      "updated": "Ticket updated"
+    },
     "ticketManagement": "Ticket Management",
     "newTicket": "New Ticket",
+    "newTicketDescription": "Create a new support ticket",
+    "titlePlaceholder": "Enter ticket title...",
+    "descriptionPlaceholder": "Describe the issue in detail...",
+    "customerName": "Customer Name",
+    "customerNamePlaceholder": "Enter customer name",
+    "assigneePlaceholder": "Enter assignee name",
     "priority": "Priority",
     "assignee": "Assignee",
     "customer": "Customer",
@@ -477,8 +589,23 @@
   },
   "campaignWizard": {
     "title": "Create New Campaign",
-    "description": "Follow the steps to create and launch your email campaign",
+    "description": "Follow the steps to create and launch your marketing campaign",
     "step": "Step",
+    "selectType": "Select Type",
+    "selectChannel": "Choose Campaign Channel",
+    "campaignDetails": "Campaign Details",
+    "channels": {
+      "email": "Email Marketing",
+      "facebook": "Facebook Ads",
+      "google": "Google Search",
+      "tiktok": "TikTok Video",
+      "linkedin": "LinkedIn Professional",
+      "youtube": "YouTube Video"
+    },
+    "budget": "Daily Budget ($)",
+    "targetUrl": "Target URL",
+    "adContent": "Ad Content / Description",
+    "adContentPlaceholder": "Describe your ad creative...",
     "selectTemplate": "Select Template",
     "selectTemplateDesc": "Choose an email template to start with",
     "editContent": "Edit Content",
@@ -501,6 +628,39 @@
     "scheduleDateTime": "Schedule Date & Time",
     "used": "Used",
     "createCampaign": "Create Campaign"
+  },
+  "Products": {
+    "title": "Product Management",
+    "subtitle": "Catalog of goods and services",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "table": {
+      "info": "Product Info",
+      "category": "Category",
+      "price": "Unit Price",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "image": "Product Image",
+      "clickToUpload": "Click to upload",
+      "name": "Product Name",
+      "namePlaceholder": "e.g., Enterprise License",
+      "code": "SKU Code",
+      "category": "Category",
+      "price": "Unit Price",
+      "currency": "Currency",
+      "description": "Description",
+      "descriptionPlaceholder": "Detailed product description...",
+      "activeStatus": "Active Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "categories": {
+      "Software": "Software",
+      "Service": "Service",
+      "Hardware": "Hardware"
+    }
   },
   "globalSearch": {
     "placeholder": "Search...",
@@ -535,78 +695,27 @@
       "contractCaps": "Contract"
     }
   },
-  "Pipeline": {
-    "title": "Pipeline",
-    "subtitle": "Manage and track your sales pipeline",
-    "description": "Manage and track your sales pipeline",
-    "pipelineValue": "Pipeline Value",
-    "wonValue": "Won Value",
-    "avgDealSize": "Avg Deal Size",
-    "winRate": "Win Rate",
-    "newDeal": "New Deal",
-    "searchPlaceholder": "Search deals..."
-  },
-  "Deals": {
-    "title": "Deals Management",
-    "description": "Manage sales opportunities and deals",
-    "newDeal": "New Deal",
-    "table": {
-      "name": "Opportunity Name",
-      "amount": "Value",
-      "stage": "Stage",
-      "probability": "Probability",
-      "close_date": "Close Date",
-      "owner": "Owner"
-    },
-    "value": "Value",
-    "probability": "Probability (%)",
-    "closeDate": "Close Date",
-    "stage": "Stage",
-    "products": "Products",
-    "discountRate": "Discount Rate"
-  },
-  "Common": {
-    "search": "Search",
-    "filter": "Filter",
-    "all": "All",
-    "overview": "Overview",
-    "details": "Details",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit"
-  },
-  "Status": {
-    "NEW": "New",
-    "CONTACTED": "Contacted",
-    "QUALIFIED": "Qualified",
-    "PROPOSAL": "Proposal",
-    "NEGOTIATION": "Negotiation",
-    "WON": "Won",
-    "LOST": "Lost",
-    "HIGH": "High",
-    "MEDIUM": "Medium",
-    "LOW": "Low",
-    "URGENT": "Urgent",
-    "RESOLVED": "Resolved"
-  },
-  "Tasks": {
+  "tasks": {
     "title": "Tasks",
-    "subtitle": "{completed}/{total} completed",
-    "description": "Track and manage your tasks",
+    "subtitle": "Manage and track your tasks",
     "createTask": "Create Task",
-    "newTask": "New Task",
-    "showCompleted": "Show Completed",
-    "dueToday": "Due Today",
-    "overdue": "{count} overdue",
-    "noTasks": "No tasks found",
-    "filterByPriority": "Filter by priority",
+    "description": "Add details for the new task",
+    "dueToday": "Due today",
+    "showCompleted": "Show completed",
+    "searchPlaceholder": "Search tasks...",
     "table": {
       "title": "Task Title",
+      "description": "Description",
       "dueDate": "Due Date",
       "priority": "Priority",
-      "status": "Status",
-      "assignee": "Assignee"
+      "assignee": "Assignee",
+      "relatedCustomer": "Related Customer"
+    },
+    "placeholders": {
+      "title": "Enter task title...",
+      "description": "Describe task details...",
+      "dueDate": "mm/dd/yyyy",
+      "selectCustomer": "Select customer (optional)"
     }
   }
 }

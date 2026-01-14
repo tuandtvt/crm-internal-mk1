@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
 import {
   Table,
   TableBody,
@@ -33,12 +33,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// Access level configuration
-const ACCESS_LEVELS = {
-  private: { label: "Private", icon: Lock, description: "Only owner can access" },
-  publicRead: { label: "Public Read", icon: Eye, description: "Everyone can view" },
-  publicReadWrite: { label: "Public Read/Write", icon: EditIcon, description: "Everyone can view and edit" },
-} as const;
+// Access level configuration (handled via translations)
 
 // Modules for sharing rules
 const MODULES = [
@@ -94,6 +89,8 @@ const sharingRules = [
 ];
 
 export default function ShareConfigPage() {
+  const t = useTranslations("admin");
+  const commonT = useTranslations("common");
   const [modules, setModules] = useState(MODULES);
   const [rules, setRules] = useState(sharingRules);
 
@@ -115,16 +112,16 @@ export default function ShareConfigPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
-            Share Configuration
+            {t("shareTitle")}
           </h1>
           <p className="text-slate-600 mt-1">
-            Configure data access rules and sharing policies
+            {t("shareDescription")}
           </p>
         </div>
         
         <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25">
           <Settings className="mr-2 h-4 w-4" />
-          Advanced Settings
+          {t("advancedSettings")}
         </Button>
       </div>
 
@@ -133,10 +130,9 @@ export default function ShareConfigPage() {
         <CardContent className="p-4 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-amber-800">Sharing Settings Impact</p>
+            <p className="font-medium text-amber-800">{t("sharingImpact")}</p>
             <p className="text-sm text-amber-700 mt-0.5">
-              Changes to sharing rules will affect data visibility for all users immediately. 
-              Review changes carefully before saving.
+              {t("sharingImpactDesc")}
             </p>
           </div>
         </CardContent>
@@ -147,10 +143,10 @@ export default function ShareConfigPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Lock className="h-5 w-5 text-slate-600" />
-            Default Sharing Rules
+            {t("defaultSharing")}
           </CardTitle>
           <CardDescription>
-            Set the default access level for each module. Users can override with specific rules.
+            {t("defaultSharingDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -159,15 +155,13 @@ export default function ShareConfigPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="font-semibold text-slate-700">Module</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Default Access Level</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Description</TableHead>
+                    <TableHead className="font-semibold text-slate-700">{t("module")}</TableHead>
+                    <TableHead className="font-semibold text-slate-700">{t("accessLevel")}</TableHead>
+                    <TableHead className="font-semibold text-slate-700">{commonT("description")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {modules.map((module) => {
-                    const accessConfig = ACCESS_LEVELS[module.currentAccess];
-                    const AccessIcon = accessConfig.icon;
                     return (
                       <TableRow key={module.id}>
                         <TableCell>
@@ -185,19 +179,19 @@ export default function ShareConfigPage() {
                               <SelectItem value="private">
                                 <div className="flex items-center gap-2">
                                   <Lock className="h-4 w-4" />
-                                  Private
+                                  {t("accessLevels.private")}
                                 </div>
                               </SelectItem>
                               <SelectItem value="publicRead">
                                 <div className="flex items-center gap-2">
                                   <Eye className="h-4 w-4" />
-                                  Public Read
+                                  {t("accessLevels.publicRead")}
                                 </div>
                               </SelectItem>
                               <SelectItem value="publicReadWrite">
                                 <div className="flex items-center gap-2">
                                   <EditIcon className="h-4 w-4" />
-                                  Public Read/Write
+                                  {t("accessLevels.publicReadWrite")}
                                 </div>
                               </SelectItem>
                             </SelectContent>
@@ -205,7 +199,7 @@ export default function ShareConfigPage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-slate-500">
-                            {accessConfig.description}
+                            {t(`accessLevelDesc.${module.currentAccess}`)}
                           </span>
                         </TableCell>
                       </TableRow>
@@ -218,7 +212,7 @@ export default function ShareConfigPage() {
           
           <div className="mt-4 flex justify-end">
             <Button className="bg-indigo-600 hover:bg-indigo-700">
-              Save Defaults
+              {t("saveDefaults")}
             </Button>
           </div>
         </CardContent>
@@ -230,14 +224,14 @@ export default function ShareConfigPage() {
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Share2 className="h-5 w-5 text-slate-600" />
-              Sharing Rules
+              {t("sharingRules")}
             </CardTitle>
             <CardDescription>
-              Exception rules that override default sharing settings
+              {t("sharingRulesDesc")}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm">
-            Add Rule
+            {t("addRule")}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -303,12 +297,11 @@ export default function ShareConfigPage() {
       {/* Quick Tips */}
       <Card className="bg-blue-50 border-blue-100 shadow-sm">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Sharing Best Practices</h4>
+          <h4 className="font-medium text-blue-900 mb-2">💡 {t("bestPractices")}</h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Start with <strong>Private</strong> defaults and grant access through specific rules</li>
-            <li>• Use department-based sharing for team collaboration</li>
-            <li>• Review sharing rules quarterly to ensure they align with organizational changes</li>
-            <li>• Test rule changes with a pilot group before organization-wide rollout</li>
+            {(t.raw("bestPracticesList") as string[]).map((tip, index) => (
+              <li key={index}>• {tip}</li>
+            ))}
           </ul>
         </CardContent>
       </Card>

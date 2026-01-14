@@ -24,14 +24,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { GlobalSearch } from "@/components/global-search";
+import { ContextualSearchInput } from "@/components/layout/contextual-search";
+import { HeaderFilterBar } from "@/components/layout/header-filter-bar";
 import {
   Menu,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   Users,
-  Kanban,
   FileText,
   ScrollText,
   CheckSquare,
@@ -45,7 +45,6 @@ import {
   User,
   LogOut,
   TrendingUp,
-  Mail,
   Layout,
   Headphones,
 } from "lucide-react";
@@ -62,7 +61,7 @@ const navSections = [
     titleKey: "sales",
     items: [
       { titleKey: "customers", href: "/sales/customers", icon: Users },
-      { titleKey: "pipeline", href: "/sales/pipeline", icon: Kanban },
+      { titleKey: "leads", href: "/sales/leads", icon: Users },
       { titleKey: "deals", href: "/sales/deals", icon: FileText },
       { titleKey: "contracts", href: "/sales/contracts", icon: ScrollText },
       { titleKey: "tasks", href: "/sales/tasks", icon: CheckSquare },
@@ -72,7 +71,6 @@ const navSections = [
     titleKey: "marketing",
     items: [
       { titleKey: "marketingOverview", href: "/marketing", icon: TrendingUp },
-      { titleKey: "campaigns", href: "/marketing/campaigns", icon: Mail },
       { titleKey: "templates", href: "/marketing/templates", icon: Layout },
     ],
   },
@@ -138,7 +136,7 @@ function SidebarContent({
   }));
 
   return (
-    <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50">
+    <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-200/50 overflow-hidden overscroll-contain">
       {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-6">
         {!isCollapsed && (
@@ -279,7 +277,6 @@ function MobileHeader() {
 
 // Desktop Header
 function DesktopHeader({ sidebarWidth }: { sidebarWidth: string }) {
-
   return (
     <header
       className={cn(
@@ -288,8 +285,9 @@ function DesktopHeader({ sidebarWidth }: { sidebarWidth: string }) {
         sidebarWidth
       )}
     >
-      <div className="flex items-center gap-4">
-        <GlobalSearch />
+      <div className="flex items-center gap-4 flex-1">
+        <ContextualSearchInput />
+        <HeaderFilterBar />
       </div>
 
       <div className="flex items-center gap-3">

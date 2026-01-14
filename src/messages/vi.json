@@ -28,7 +28,26 @@
     "overview": "Tổng quan",
     "details": "Chi tiết",
     "settings": "Cài đặt",
-    "selected": "Đã chọn"
+    "selected": "Đã chọn",
+    "close": "Đóng",
+    "clear": "Xóa",
+    "role": "Vai trò",
+    "department": "Phòng ban",
+    "roles": {
+      "admin": "Quản trị viên",
+      "manager": "Quản lý",
+      "sales": "Kinh doanh",
+      "support": "Hỗ trợ"
+    },
+    "team": "Thành viên",
+    "create": "Tạo mới",
+    "searchCustomers": "Tìm khách hàng...",
+    "searchLeads": "Tìm tiềm năng...",
+    "searchDeals": "Tìm thương vụ...",
+    "searchContracts": "Tìm hợp đồng...",
+    "searchTasks": "Tìm công việc...",
+    "searchTickets": "Tìm yêu cầu...",
+    "searchTemplates": "Tìm mẫu..."
   },
   "auth": {
     "login": {
@@ -70,11 +89,12 @@
     "dashboard": "Bảng điều khiển",
     "overview": "Tổng quan",
     "sales": "Bán hàng",
+    "catalog": "Danh mục",
     "marketing": "Marketing",
     "support": "Hỗ trợ",
     "admin": "Quản trị",
     "customers": "Khách hàng",
-    "pipeline": "Kênh bán hàng",
+    "leads": "Tiềm năng",
     "deals": "Giao dịch",
     "contracts": "Hợp đồng",
     "tasks": "Nhiệm vụ",
@@ -200,16 +220,24 @@
     "intelligence": "Thông tin Lead",
     "addNew": "Thêm mới"
   },
-  "pipeline": {
-    "title": "Kênh bán hàng",
-    "subtitle": "Quản lý và theo dõi kênh bán hàng của bạn",
-    "description": "Quản lý và theo dõi kênh bán hàng của bạn",
-    "pipelineValue": "Giá trị kênh",
-    "wonValue": "Giá trị thắng",
-    "avgDealSize": "Giá trị TB",
-    "winRate": "Tỷ lệ thắng",
-    "newDeal": "Giao dịch mới",
-    "searchPlaceholder": "Tìm kiếm giao dịch..."
+  "leads": {
+    "title": "Quản lý Lead",
+    "description": "Theo dõi và quản lý khách hàng tiềm năng",
+    "convertToCustomer": "Chuyển thành khách hàng",
+    "convertSuccess": "Đã chuyển Lead thành khách hàng thành công",
+    "newLeads": "Lead mới",
+    "qualified": "Đủ điều kiện",
+    "contacted": "Đã liên hệ"
+  },
+  "filters": {
+    "dateRange": "Khoảng thời gian",
+    "industry": "Ngành",
+    "owner": "Người phụ trách",
+    "selectDateRange": "Chọn khoảng thời gian",
+    "from": "Từ",
+    "to": "Đến",
+    "allIndustries": "Tất cả ngành",
+    "allOwners": "Tất cả"
   },
   "deals": {
     "title": "Quản lý Cơ hội",
@@ -257,6 +285,9 @@
     "CLOSED": "Đã đóng",
     "DRAFT": "Nháp",
     "SENT": "Đã gửi",
+    "SENDING": "Đang gửi",
+    "SCHEDULED": "Đã lập lịch",
+    "PAUSED": "Đã tạm dừng",
     "SIGNED": "Đã ký",
     "EXPIRED": "Hết hạn",
     "HIGH": "Cao",
@@ -358,9 +389,38 @@
       "selectManager": "Chọn quản lý (tùy chọn)",
       "deptDescription": "Mô tả",
       "descPlaceholder": "Mô tả chức năng và trách nhiệm của phòng ban...",
-      "note": "Người dùng có thể được phân vào phòng ban này sau khi tạo từ trang Quản lý người dùng.",
       "creating": "Đang tạo..."
-    }
+    },
+    "shareTitle": "Cấu hình chia sẻ",
+    "shareDescription": "Cấu hình các quy tắc truy cập dữ liệu và chính sách chia sẻ",
+    "advancedSettings": "Cài đặt nâng cao",
+    "sharingImpact": "Tác động của cài đặt chia sẻ",
+    "sharingImpactDesc": "Các thay đổi đối với quy tắc chia sẻ sẽ ảnh hưởng đến khả năng hiển thị dữ liệu cho tất cả người dùng ngay lập tức. Xem lại các thay đổi cẩn thận trước khi lưu.",
+    "defaultSharing": "Quy tắc chia sẻ mặc định",
+    "defaultSharingDesc": "Đặt cấp độ truy cập mặc định cho mỗi mô-đun. Người dùng có thể ghi đè bằng các quy tắc cụ thể.",
+    "sharingRules": "Quy tắc chia sẻ cụ thể",
+    "sharingRulesDesc": "Các quy tắc ngoại lệ ghi đè cài đặt chia sẻ mặc định",
+    "addRule": "Thêm quy tắc",
+    "saveDefaults": "Lưu mặc định",
+    "accessLevel": "Mức độ truy cập mặc định",
+    "module": "Mô-đun",
+    "accessLevels": {
+      "private": "Riêng tư",
+      "publicRead": "Chỉ xem",
+      "publicReadWrite": "Xem và Chỉnh sửa"
+    },
+    "accessLevelDesc": {
+      "private": "Chỉ người sở hữu mới có quyền truy cập",
+      "publicRead": "Mọi người đều có thể xem",
+      "publicReadWrite": "Mọi người đều có thể xem và chỉnh sửa"
+    },
+    "bestPractices": "Kinh nghiệm thực tế về chia sẻ",
+    "bestPracticesList": [
+      "Bắt đầu với mặc định là Riêng tư và cấp quyền thông qua các quy tắc cụ thể",
+      "Sử dụng chia sẻ dựa trên phòng ban để cộng tác nhóm",
+      "Xem lại các quy tắc chia sẻ hàng quý để đảm bảo chúng phù hợp với các thay đổi của tổ chức",
+      "Kiểm tra các thay đổi quy tắc với một nhóm thử nghiệm trước khi triển khai rộng rãi"
+    ]
   },
   "marketing": {
     "title": "Tổng quan Marketing",
@@ -388,16 +448,43 @@
     "legendOpened": "Đã mở",
     "filterByStatus": "Lọc theo trạng thái",
     "sendingProgress": "Tiến độ gửi",
-    "scheduledFor": "Lên lịch vào"
+    "scheduledFor": "Lên lịch vào",
+    "campaignName": "Tên chiến dịch",
+    "status":"Trạng thái",
+    "performance": "Hiệu suất",
+    "type": "Loại",
+    "channels": {
+      "email": "Email",
+      "facebook": "Facebook",
+      "google": "Google ADS",
+      "tiktok": "TikTok",
+      "linkedin": "LinkedIn",
+      "youtube": "YouTube"
+    },
+    "metrics": {
+      "spend": "Chi phí",
+      "reach": "Tiếp cận",
+      "impressions": "Lượt hiển thị",
+      "views": "Lượt xem",
+      "cpc": "CPC",
+      "roi": "ROI"
+    },
+    "showing": "Hiển thị",
+    "to": "đến",
+    "of": "trong số"
   },
   "support": {
     "title": "Hỗ trợ khách hàng",
     "description": "Quản lý các yêu cầu hỗ trợ khách hàng",
-    "tickets": "Yêu cầu hỗ trợ",
+    "tickets": "ticket",
     "ticketManagement": "Quản lý ticket",
     "newTicket": "Ticket mới",
+    "newTicketDescription": "Tạo ticket hỗ trợ mới",
     "searchTickets": "Tìm kiếm yêu cầu...",
     "filterByStatus": "Lọc theo trạng thái",
+    "filterByPriority": "Lọc theo độ ưu tiên",
+    "noTickets": "Không có ticket nào",
+    "page": "Trang",
     "status": {
       "all": "Tất cả trạng thái",
       "new": "Mới",
@@ -405,12 +492,49 @@
       "pending": "Chờ xử lý",
       "resolved": "Đã giải quyết"
     },
+    "stats": {
+      "total": "Tổng ticket",
+      "new": "Mới",
+      "open": "Đang mở",
+      "pending": "Chờ xử lý",
+      "resolved": "Đã giải quyết"
+    },
+    "table": {
+      "title": "Tiêu đề",
+      "customer": "Khách hàng"
+    },
+    "details": {
+      "status": "Trạng thái",
+      "priority": "Độ ưu tiên",
+      "category": "Danh mục",
+      "slaDeadline": "Hạn SLA",
+      "description": "Mô tả",
+      "assignedTo": "Người được giao",
+      "tags": "Nhãn",
+      "created": "Ngày tạo",
+      "lastUpdated": "Cập nhật lần cuối"
+    },
+    "auditLog": {
+      "title": "Lịch sử hoạt động",
+      "created": "Ticket được tạo",
+      "statusChanged": "Trạng thái thay đổi:",
+      "priorityChanged": "Độ ưu tiên thay đổi:",
+      "categoryChanged": "Danh mục thay đổi:",
+      "assigned": "Được giao cho",
+      "updated": "Ticket được cập nhật"
+    },
+    "titlePlaceholder": "Nhập tiêu đề ticket...",
+    "descriptionPlaceholder": "Mô tả chi tiết vấn đề...",
+    "customerName": "Tên khách hàng",
+    "customerNamePlaceholder": "Nhập tên khách hàng",
+    "assigneePlaceholder": "Nhập tên người xử lý",
     "priority": "Độ ưu tiên",
     "assignee": "Người được giao",
     "customer": "Khách hàng",
     "subject": "Chủ đề",
     "sla": "SLA",
     "slaDeadline": "Hạn SLA",
+    "viewFullConversation": "Xem chi tiết →",
     "low": "Thấp",
     "medium": "Trung bình",
     "high": "Cao",
@@ -465,8 +589,23 @@
   },
   "campaignWizard": {
     "title": "Tạo chiến dịch mới",
-    "description": "Làm theo các bước để tạo và khởi chạy chiến dịch email của bạn",
+    "description": "Làm theo các bước để tạo và khởi chạy chiến dịch marketing của bạn",
     "step": "Bước",
+    "selectType": "Chọn loại hình",
+    "selectChannel": "Chọn kênh chiến dịch",
+    "campaignDetails": "Chi tiết chiến dịch",
+    "channels": {
+      "email": "Email Marketing",
+      "facebook": "Facebook Ads",
+      "google": "Google Search",
+      "tiktok": "TikTok Video",
+      "linkedin": "LinkedIn Professional",
+      "youtube": "YouTube Video"
+    },
+    "budget": "Ngân sách hàng ngày ($)",
+    "targetUrl": "URL Đích",
+    "adContent": "Nội dung quảng cáo / Mô tả",
+    "adContentPlaceholder": "Mô tả nội dung quảng cáo của bạn...",
     "selectTemplate": "Chọn mẫu",
     "selectTemplateDesc": "Chọn một mẫu email để bắt đầu",
     "editContent": "Chỉnh sửa nội dung",
@@ -489,6 +628,39 @@
     "scheduleDateTime": "Ngày & Giờ lập lịch",
     "used": "Đã dùng",
     "createCampaign": "Tạo chiến dịch"
+  },
+  "Products": {
+    "title": "Quản lý sản phẩm",
+    "subtitle": "Danh mục hàng hóa và dịch vụ",
+    "addProduct": "Thêm sản phẩm",
+    "editProduct": "Chỉnh sửa sản phẩm",
+    "table": {
+      "info": "Thông tin",
+      "category": "Danh mục",
+      "price": "Đơn giá",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    },
+    "form": {
+      "image": "Hình ảnh sản phẩm",
+      "clickToUpload": "Nhấn để tải lên",
+      "name": "Tên sản phẩm",
+      "namePlaceholder": "vd: Gói Enterprise",
+      "code": "Mã SKU",
+      "category": "Danh mục",
+      "price": "Đơn giá",
+      "currency": "Tiền tệ",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Mô tả chi tiết sản phẩm...",
+      "activeStatus": "Trạng thái hoạt động",
+      "active": "Đang hoạt động",
+      "inactive": "Ngừng kinh doanh"
+    },
+    "categories": {
+      "Software": "Phần mềm",
+      "Service": "Dịch vụ",
+      "Hardware": "Phần cứng"
+    }
   },
   "globalSearch": {
     "placeholder": "Tìm kiếm...",
@@ -523,78 +695,27 @@
       "contractCaps": "Hợp đồng"
     }
   },
-  "Pipeline": {
-    "title": "Kênh bán hàng",
-    "subtitle": "Quản lý và theo dõi kênh bán hàng của bạn",
-    "description": "Quản lý và theo dõi kênh bán hàng của bạn",
-    "pipelineValue": "Giá trị kênh",
-    "wonValue": "Giá trị thắng",
-    "avgDealSize": "Giá trị TB",
-    "winRate": "Tỷ lệ thắng",
-    "newDeal": "Giao dịch mới",
-    "searchPlaceholder": "Tìm kiếm giao dịch..."
-  },
-  "Deals": {
-    "title": "Quản lý Cơ hội",
-    "description": "Quản lý cơ hội và giao dịch bán hàng",
-    "newDeal": "Giao dịch mới",
-    "table": {
-      "name": "Tên cơ hội",
-      "amount": "Giá trị",
-      "stage": "Giai đoạn",
-      "probability": "Xác suất",
-      "close_date": "Ngày chốt",
-      "owner": "Người phụ trách"
-    },
-    "value": "Giá trị",
-    "probability": "Khả năng (%)",
-    "closeDate": "Ngày đóng",
-    "stage": "Giai đoạn",
-    "products": "Sản phẩm",
-    "discountRate": "Tỷ lệ giảm giá"
-  },
-  "Common": {
-    "search": "Tìm kiếm",
-    "filter": "Lọc",
-    "all": "Tất cả",
-    "overview": "Tổng quan",
-    "details": "Chi tiết",
-    "cancel": "Hủy",
-    "save": "Lưu",
-    "delete": "Xóa",
-    "edit": "Chỉnh sửa"
-  },
-  "Status": {
-    "NEW": "Mới",
-    "CONTACTED": "Đã liên hệ",
-    "QUALIFIED": "Đủ điều kiện",
-    "PROPOSAL": "Báo giá",
-    "NEGOTIATION": "Thương lượng",
-    "WON": "Thành công",
-    "LOST": "Thất bại",
-    "HIGH": "Cao",
-    "MEDIUM": "Trung bình",
-    "LOW": "Thấp",
-    "URGENT": "Khẩn cấp",
-    "RESOLVED": "Đã giải quyết"
-  },
-  "Tasks": {
+  "tasks": {
     "title": "Nhiệm vụ",
-    "subtitle": "{completed}/{total} hoàn thành",
-    "description": "Theo dõi và quản lý nhiệm vụ",
+    "subtitle": "Quản lý và theo dõi các nhiệm vụ của bạn",
     "createTask": "Tạo nhiệm vụ",
-    "newTask": "Nhiệm vụ mới",
-    "showCompleted": "Hiện đã hoàn thành",
-    "dueToday": "Đến hạn hôm nay",
-    "overdue": "{count} trễ hạn",
-    "noTasks": "Không có nhiệm vụ",
-    "filterByPriority": "Lọc theo độ ưu tiên",
+    "description": "Thêm nhiệm vụ mới để theo dõi công việc",
+    "dueToday": "Hết hạn hôm nay",
+    "showCompleted": "Hiển thị đã hoàn thành",
+    "searchPlaceholder": "Tìm kiếm nhiệm vụ...",
     "table": {
-      "title": "Tiêu đề",
-      "dueDate": "Ngày đến hạn",
+      "title": "Tiêu đề nhiệm vụ",
+      "description": "Mô tả",
+      "dueDate": "Hạn hoàn thành",
       "priority": "Độ ưu tiên",
-      "status": "Trạng thái",
-      "assignee": "Người được giao"
+      "assignee": "Người thực hiện",
+      "relatedCustomer": "Khách hàng liên quan"
+    },
+    "placeholders": {
+      "title": "Nhập tiêu đề nhiệm vụ...",
+      "description": "Mô tả chi tiết nhiệm vụ...",
+      "dueDate": "mm/dd/yyyy",
+      "selectCustomer": "Chọn khách hàng (tùy chọn)"
     }
   }
 }

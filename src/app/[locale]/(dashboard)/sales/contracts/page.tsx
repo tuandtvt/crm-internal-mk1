@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { DateRange } from "react-day-picker";
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +42,9 @@ import {
   Send,
   Loader2,
   Building2,
+  X,
 } from "lucide-react";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 
 // Mock contracts data
 const mockContracts = [
@@ -327,8 +331,17 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
   const t = useTranslations("contracts");
   const tc = useTranslations("common");
   const ts = useTranslations("status");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const searchParams = useSearchParams();
+  
+  // Read filters from URL
+  const searchTerm = searchParams.get("q") || "";
+  const fromDate = searchParams.get("from");
+  const toDate = searchParams.get("to");
+  const dateRange = fromDate && toDate ? {
+    from: new Date(fromDate),
+    to: new Date(toDate),
+  } : undefined;
+
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const CONTRACT_STATUS = {
@@ -342,8 +355,9 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
     const matchesSearch = 
       contract.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contract.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || contract.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesDate = !dateRange?.from || !dateRange?.to || 
+      (contract.startDate >= dateRange.from && contract.startDate <= dateRange.to);
+    return matchesSearch && matchesDate;
   });
 
   const totalValue = mockContracts.reduce((sum, c) => sum + c.value, 0);
@@ -403,35 +417,9 @@ export default function ContractsPage({ params: { locale } }: { params: { locale
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="flex flex-1 gap-3 items-center w-full sm:w-auto">
-              <div className="relative flex-1 sm:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder={tc("search")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={t("table.status")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tc("all")}</SelectItem>
-                  <SelectItem value="DRAFT">{ts("DRAFT")}</SelectItem>
-                  <SelectItem value="SENT">{ts("SENT")}</SelectItem>
-                  <SelectItem value="SIGNED">{ts("SIGNED")}</SelectItem>
-                  <SelectItem value="EXPIRED">{ts("EXPIRED")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-slate-500">
-              {filteredContracts.length} {t("title").toLowerCase()}
-            </p>
-          </div>
+          <p className="text-sm text-slate-500">
+            {filteredContracts.length} {t("title").toLowerCase()}
+          </p>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="overflow-x-auto -mx-6">

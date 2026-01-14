@@ -10,15 +10,26 @@ import {
   formatNumber,
   getCampaignStatusColor,
 } from "@/lib/mock-data/marketing";
-import { TrendingUp, Mail, MousePointerClick, Users, Plus, ArrowRight } from "lucide-react";
+import { TrendingUp, Mail, MousePointerClick, Users, Plus, ArrowRight, Facebook, Globe, Share2, Linkedin, Youtube, Music2 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
 export default function MarketingPage() {
   const t = useTranslations("marketing");
   const ts = useTranslations("status");
-  const tc = useTranslations("common");
   const analytics = mockCampaignAnalytics;
-  const recentCampaigns = mockCampaigns.slice(0, 5);
+  const recentCampaigns = mockCampaigns.slice(0, 10);
+
+  const getChannelIcon = (type: string) => {
+    switch (type) {
+      case "email": return <Mail className="h-4 w-4" />;
+      case "facebook": return <Facebook className="h-4 w-4 text-blue-600" />;
+      case "google": return <Globe className="h-4 w-4 text-emerald-600" />;
+      case "tiktok": return <Music2 className="h-4 w-4 text-pink-600" />;
+      case "linkedin": return <Linkedin className="h-4 w-4 text-blue-700" />;
+      case "youtube": return <Youtube className="h-4 w-4 text-red-600" />;
+      default: return <Share2 className="h-4 w-4" />;
+    }
+  };
 
   const stats = [
     {
@@ -123,16 +134,28 @@ export default function MarketingPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
+                    <div className="p-1.5 rounded bg-slate-100">
+                      {getChannelIcon(campaign.type)}
+                    </div>
                     <h3 className="text-sm font-medium text-slate-900 truncate">{campaign.name}</h3>
                     <Badge className={getCampaignStatusColor(campaign.status)}>{ts(campaign.status.toUpperCase())}</Badge>
                   </div>
-                  <p className="text-xs text-slate-500 truncate">{campaign.subject}</p>
-                  {campaign.status === "sent" && (
+                  {campaign.subject && <p className="text-xs text-slate-500 truncate">{campaign.subject}</p>}
+                  {(campaign.status === "sent" || campaign.status === "sending") && (
                     <div className="flex items-center gap-4 mt-2 text-xs">
-                      <span className="text-slate-600">
-                        📧 {formatNumber(campaign.recipientCount)} {t("sent")}
-                      </span>
-                      <span className="text-emerald-600">📊 {campaign.openRate}% {t("open")}</span>
+                      {campaign.type === "email" ? (
+                        <>
+                          <span className="text-slate-600">📧 {formatNumber(campaign.recipientCount || 0)} {t("sent")}</span>
+                          <span className="text-emerald-600">📊 {campaign.openRate}% {t("open")}</span>
+                        </>
+                      ) : (
+                        <>
+                          {campaign.spend && <span className="text-slate-900 font-bold font-mono">${formatNumber(campaign.spend)}</span>}
+                          {campaign.reach && <span className="text-slate-600">👥 {formatNumber(campaign.reach)} {t("metrics.reach")}</span>}
+                          {campaign.views && <span className="text-violet-600">🎥 {formatNumber(campaign.views)} {t("metrics.views")}</span>}
+                          {campaign.impressions && <span className="text-blue-600">👀 {formatNumber(campaign.impressions)} {t("metrics.impressions")}</span>}
+                        </>
+                      )}
                       <span className="text-blue-600">👆 {campaign.clickRate}% {t("click")}</span>
                     </div>
                   )}

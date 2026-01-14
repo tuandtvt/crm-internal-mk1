@@ -4,20 +4,27 @@ export interface Campaign {
   id: string;
   name: string;
   status: "draft" | "scheduled" | "sending" | "sent" | "paused";
-  type: "email" | "sms" | "push";
+  type: "email" | "sms" | "push" | "facebook" | "google" | "tiktok" | "linkedin" | "youtube";
   thumbnail?: string;
-  subject: string;
-  recipientCount: number;
-  sentCount: number;
-  openRate: number;
-  clickRate: number;
-  conversionRate: number;
+  subject?: string;
+  recipientCount?: number;
+  sentCount?: number;
+  openRate?: number;
+  clickRate?: number;
+  conversionRate?: number;
   scheduledDate?: Date;
   sentDate?: Date;
   createdAt: Date;
   createdBy: string;
-  template: string;
-  audienceSegment: string;
+  template?: string;
+  audienceSegment?: string;
+  // Social/Search specific
+  budget?: number;
+  spend?: number;
+  reach?: number;
+  impressions?: number;
+  views?: number;
+  cpc?: number;
 }
 
 export interface EmailTemplate {
@@ -155,6 +162,46 @@ export const mockCampaigns: Campaign[] = [
     createdBy: "Sarah Connor",
     template: "Urgent Sale",
     audienceSegment: "All Active",
+  },
+  {
+    id: "fb1",
+    name: "Facebook Brand Awareness - Q1",
+    status: "sent",
+    type: "facebook",
+    budget: 5000,
+    spend: 4850,
+    reach: 125000,
+    impressions: 450000,
+    clickRate: 2.1,
+    conversionRate: 0.8,
+    sentDate: new Date("2026-01-01"),
+    createdAt: new Date("2025-12-25"),
+    createdBy: "Marketing Team",
+  },
+  {
+    id: "gg1",
+    name: "Google Search - CRM Keywords",
+    status: "sending",
+    type: "google",
+    budget: 10000,
+    spend: 3400,
+    impressions: 85000,
+    clickRate: 5.4,
+    cpc: 1.25,
+    createdAt: new Date("2026-01-01"),
+    createdBy: "SEO Expert",
+  },
+  {
+    id: "tk1",
+    name: "TikTok Challenge - #MK1Transforms",
+    status: "sent",
+    type: "tiktok",
+    budget: 2000,
+    spend: 2000,
+    views: 850000,
+    reach: 420000,
+    createdAt: new Date("2026-01-05"),
+    createdBy: "Creative Lead",
   },
 ];
 

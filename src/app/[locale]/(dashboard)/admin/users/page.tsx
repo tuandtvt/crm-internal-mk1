@@ -39,6 +39,7 @@ import {
   User,
   MoreHorizontal,
   Loader2,
+  X,
 } from "lucide-react";
 
 // Role configuration
@@ -289,6 +290,13 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole;
   });
 
+  const hasActiveFilters = searchTerm || roleFilter !== "all";
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("all");
+  };
+
   return (
     <div className="space-y-6 lg:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -345,34 +353,18 @@ export default function AdminUsersPage() {
 
       <Card className="bg-white border-slate-200/60 shadow-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="flex flex-1 gap-3 items-center w-full sm:w-auto">
-              <div className="relative flex-1 sm:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder={t("searchUsers")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[130px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={ct("role")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("allRoles")}</SelectItem>
-                  <SelectItem value="admin">{ct("roles.admin")}</SelectItem>
-                  <SelectItem value="manager">{ct("roles.manager")}</SelectItem>
-                  <SelectItem value="sales">{ct("roles.sales")}</SelectItem>
-                  <SelectItem value="support">{ct("roles.support")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-slate-500">
-              {filteredUsers.length} {t("users").toLowerCase()}
-            </p>
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-end">
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="h-9 px-2 text-slate-500 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="h-4 w-4 mr-1" />
+                {ct("clear")}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-0">

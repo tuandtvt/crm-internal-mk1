@@ -7,7 +7,6 @@ import {
   CheckSquare, 
   LifeBuoy,
   Download,
-  Calendar as CalendarIcon,
   TrendingUp,
   TrendingDown
 } from "lucide-react";
@@ -18,23 +17,38 @@ import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { CustomerGrowthChart } from "@/components/dashboard/CustomerGrowthChart";
 import { SourcePieChart } from "@/components/dashboard/SourcePieChart";
 import { ConversionGauge } from "@/components/dashboard/ConversionGauge";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useMemo } from "react";
+import { DateRange } from "react-day-picker";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const tf = useTranslations("filters");
+  // Date range filter
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+  // Mock filter effect: adjust KPIs based on date range
+  const filteredKpiMetrics = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return kpiMetrics;
+    
+    // Calculate days in range for mock adjustment
+    const daysDiff = Math.ceil(
+      (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const factor = Math.max(0.3, Math.min(1.5, daysDiff / 30)); // Scale based on range
+    
+    return {
+      newLeads: Math.round(kpiMetrics.newLeads * factor),
+      newContracts: Math.round(kpiMetrics.newContracts * factor),
+      pendingTasks: Math.round(kpiMetrics.pendingTasks * (factor > 1 ? 1.1 : 0.9)),
+      pendingTickets: Math.round(kpiMetrics.pendingTickets * factor),
+    };
+  }, [dateRange]);
 
   const kpis = [
     {
       title: t("newLeads"),
-      value: kpiMetrics.newLeads,
+      value: filteredKpiMetrics.newLeads,
       change: "+12.5%",
       trend: "up",
       icon: Users,
@@ -43,7 +57,7 @@ export default function DashboardPage() {
     },
     {
       title: t("newContracts"),
-      value: kpiMetrics.newContracts,
+      value: filteredKpiMetrics.newContracts,
       change: "+8.2%",
       trend: "up",
       icon: FileText,
@@ -52,7 +66,7 @@ export default function DashboardPage() {
     },
     {
       title: t("pendingTasks"),
-      value: kpiMetrics.pendingTasks,
+      value: filteredKpiMetrics.pendingTasks,
       change: "-2",
       trend: "down",
       icon: CheckSquare,
@@ -61,7 +75,7 @@ export default function DashboardPage() {
     },
     {
       title: t("openTickets"),
-      value: kpiMetrics.pendingTickets,
+      value: filteredKpiMetrics.pendingTickets,
       change: "+1",
       trend: "up",
       icon: LifeBuoy,
@@ -84,26 +98,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="h-10 bg-white/50 border-slate-200 text-slate-600 hover:bg-white"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          
           <Button className="h-10 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">
             <Download className="mr-2 h-4 w-4" />
             {t("exportReport")}
